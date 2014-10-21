@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="questions_bees">
+        <item>Where are you located?</item>
+        <item>What type of bee is it?</item>
+        <item>How many other bees are around?</item>
+        <item>What type of flower is the bee pollinating?</item>
+    </string-array>
+</resources>
