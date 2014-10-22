@@ -13,11 +13,14 @@ import com.twotoasters.android.support.v7.widget.DefaultItemAnimator;
 import com.twotoasters.android.support.v7.widget.LinearLayoutManager;
 import com.twotoasters.android.support.v7.widget.RecyclerView;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import pollinators.github.io.pollinatorresearchcollector.database.SurveyDataSource;
+import pollinators.github.io.pollinatorresearchcollector.survey.Survey;
 
 
 public class MainActivity extends ActionBarActivity
@@ -42,6 +45,14 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.act_main);
         ButterKnife.inject(this);
+
+        SurveyDataSource s = new SurveyDataSource(this);
+        try {
+            s.open();
+            s.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);

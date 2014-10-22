@@ -3,7 +3,7 @@ package pollinators.github.io.pollinatorresearchcollector.database.models;
 /**
  * Created by ted on 10/18/14.
  */
-public class BaseModel {
+public abstract class AbstractModel {
 
     private long id;
 
@@ -11,7 +11,7 @@ public class BaseModel {
         return id;
     }
 
-    public void setId() {
+    public void setId(long id) {
         this.id = id;
     }
 }

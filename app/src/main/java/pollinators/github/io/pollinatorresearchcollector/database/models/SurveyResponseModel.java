@@ -6,7 +6,7 @@ import java.util.List;
  * This model represents all possible surveys that could be done. It holds some meta data about the
  * survey, and the responses associated with it.
  */
-public class SurveyResponseModel extends BaseModel {
+public class SurveyResponseModel extends AbstractModel {
 
     //**********************************************************************************************
     // NON-STATIC DATA MEMBERS
