@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Pollinator Research Collector</string>
+    <string name="app_name">Honeycomb</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
@@ -9,9 +9,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
-
-    <string name="answers_table_def">
-        CREATE TABLE `answers` (
+    <string name="table_def_survey_data">        CREATE TABLE `answers` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `question_option_id` INTEGER NOT NULL,
           `user_id` INTEGER NOT NULL,
@@ -22,11 +20,32 @@
           `unit_of_measure_id` INTEGER DEFAULT NULL,
           FOREIGN KEY (`question_option_id`) REFERENCES `question_options` (`_id`),
           FOREIGN KEY (`user_id`) REFERENCES `users` (`_id`)
-        );
-    </string>
-
-    <string name="questions_table_def">
-        CREATE TABLE `questions` (
+        );</string>
+    <string name="table_def_survey_question_answers">        CREATE TABLE `answers` (
+          `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `question_option_id` INTEGER NOT NULL,
+          `user_id` INTEGER NOT NULL,
+          `answer_numeric` INTEGER DEFAULT NULL,
+          `answer_text` varchar(255) DEFAULT NULL,
+          `answer_yn` tinyint(1) DEFAULT NULL,
+          `answer_data` blob,
+          `unit_of_measure_id` INTEGER DEFAULT NULL,
+          FOREIGN KEY (`question_option_id`) REFERENCES `question_options` (`_id`),
+          FOREIGN KEY (`user_id`) REFERENCES `users` (`_id`)
+        );</string>
+    <string name="answers_table_def">        CREATE TABLE `answers` (
+          `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `question_option_id` INTEGER NOT NULL,
+          `user_id` INTEGER NOT NULL,
+          `answer_numeric` INTEGER DEFAULT NULL,
+          `answer_text` varchar(255) DEFAULT NULL,
+          `answer_yn` tinyint(1) DEFAULT NULL,
+          `answer_data` blob,
+          `unit_of_measure_id` INTEGER DEFAULT NULL,
+          FOREIGN KEY (`question_option_id`) REFERENCES `question_options` (`_id`),
+          FOREIGN KEY (`user_id`) REFERENCES `users` (`_id`)
+        );</string>
+    <string name="questions_table_def">        CREATE TABLE `questions` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `survey_section_id` INTEGER NOT NULL,
           `input_type_id` INTEGER NOT NULL,
@@ -37,103 +56,68 @@
           `is_allow_multiple_option_answers` tinyint(1) DEFAULT NULL,
           FOREIGN KEY (`survey_section_id`) REFERENCES `survey_sections` (`id`),
           FOREIGN KEY (`input_type_id`) REFERENCES `input_types` (`id`)
-        );
-    </string>
-
-    <string name="question_options_table_def">
-       CREATE TABLE `question_options` (
+        );</string>
+    <string name="question_options_table_def">       CREATE TABLE `question_options` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `question_id` INTEGER NOT NULL,
           `option_choice_id` INTEGER NOT NULL,
           FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`),
           FOREIGN KEY (`option_choice_id`) REFERENCES `option_choices` (`id`)
-       );
-    </string>
-
-    <string name="input_types_table_def">
-        CREATE TABLE `input_types` (
+       );</string>
+    <string name="input_types_table_def">        CREATE TABLE `input_types` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `input_type_name` varchar(80) NOT NULL
-        );
-    </string>
-
-    <string name="option_choices_table_def">
-        CREATE TABLE `option_choices` (
+        );</string>
+    <string name="option_choices_table_def">        CREATE TABLE `option_choices` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `option_group_id` INTEGER NOT NULL,
           `option_choice_name` varchar(45) NOT NULL
-        );
-    </string>
-
-    <string name="option_groups_table_def">
-        CREATE TABLE `option_groups` (
+        );</string>
+    <string name="option_groups_table_def">        CREATE TABLE `option_groups` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `option_group_name` varchar(45) NOT NULL
-        );
-    </string>
-
-    <string name="organizations_table_def">
-        CREATE TABLE `organizations` (
+        );</string>
+    <string name="organizations_table_def">        CREATE TABLE `organizations` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `organization_name` varchar(80) DEFAULT NULL
-        );
-    </string>
-
-    <string name="survey_comments_table_def">
-
-        CREATE TABLE `survey_comments` (
+        );</string>
+    <string name="survey_comments_table_def">        CREATE TABLE `survey_comments` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `survey_header_id` INTEGER NOT NULL,
           `user_id` INTEGER NOT NULL,
           `comment` varchar(4096) DEFAULT NULL,
           FOREIGN KEY (`survey_header_id`) REFERENCES `survey_headers` (`_id`),
           FOREIGN KEY (`user_id`) REFERENCES `users` (`_id`)
-        );
-
-    </string>
-    <string name="survey_headers_table_def">
-
-        CREATE TABLE `survey_headers` (
+        );</string>
+    <string name="survey_headers_table_def">        CREATE TABLE `survey_headers` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `organization_id` INTEGER NOT NULL,
           `survey_name` varchar(80) DEFAULT NULL,
           `instructions` varchar(4096) DEFAULT NULL,
           `otherHeaderInfo` varchar(255) DEFAULT NULL,
           FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`_id`)
-        );
-    </string>
-
-    <string name="survey_sections_table_def">
-        CREATE TABLE `survey_sections` (
+        );</string>
+    <string name="survey_sections_table_def">        CREATE TABLE `survey_sections` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `survey_header_id` INTEGER DEFAULT NULL,
           `section_name` varchar(80) DEFAULT NULL,
           `section_title` varchar(45) DEFAULT NULL,
           `section_subheading` varchar(45) DEFAULT NULL,
           `is_section_required` tinyint(1) NOT NULL
-        );
-    </string>
-
-    <string name="unit_of_measures_table_def">
-        CREATE TABLE `unit_of_measures` (
+        );</string>
+    <string name="unit_of_measures_table_def">        CREATE TABLE `unit_of_measures` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `unit_of_measure_name` varchar(80) DEFAULT NULL
-        );
-    </string>
-
-    <string name="user_survey_sections_table_def">
-        CREATE TABLE `user_survey_sections` (
+        );</string>
+    <string name="user_survey_sections_table_def">        CREATE TABLE `user_survey_sections` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `user_id` INTEGER NOT NULL,
           `survey_section_id` INTEGER NOT NULL,
           `completed_on` datetime DEFAULT NULL,
           FOREIGN KEY (`user_id`) REFERENCES `users` (`_id`),
           FOREIGN KEY (`survey_section_id`) REFERENCES `survey_sections` (`_id`)
-        );
-    </string>
-
-    <string name="users_table_def">
-        CREATE TABLE `users` (
+        );</string>
+    <string name="users_table_def">        CREATE TABLE `users` (
           `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `username` varchar(80) NOT NULL,
           `password_hashed` varchar(255) DEFAULT NULL,
@@ -142,7 +126,7 @@
           `invite_dt` datetime DEFAULT NULL,
           `last_login_dt` datetime DEFAULT NULL,
           `inviter_user_id` INTEGER DEFAULT NULL
-        );
-    </string>
+        );</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>

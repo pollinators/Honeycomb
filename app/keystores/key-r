@@ -1,0 +1,27 @@
+
+Keystore type: JKS
+Keystore provider: SUN
+
+Your keystore contains 1 entry
+
+Alias name: release-key
+Creation date: Nov 14, 2014
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=Ted Papaioannou, OU=CSE Department, O=The Pennsylvania State University, L=University Park, ST=Pennsylvania, C=US
+Issuer: CN=Ted Papaioannou, OU=CSE Department, O=The Pennsylvania State University, L=University Park, ST=Pennsylvania, C=US
+Serial number: 546628a8
+Valid from: Fri Nov 14 11:07:04 EST 2014 until: Tue Nov 08 11:07:04 EST 2039
+Certificate fingerprints:
+	 MD5:  AE:DB:32:B0:B7:9C:23:87:2B:39:E3:40:0F:0E:3C:1E
+	 SHA1: 86:D5:7E:CC:11:6A:2E:F2:50:86:C9:ED:83:2A:6E:39:94:C8:FA:11
+	 SHA256: 3B:79:4B:B8:79:39:96:B1:CA:8D:D0:49:90:A2:17:65:65:3A:A8:03:12:05:0B:D1:67:D3:CF:E2:DD:6B:2E:C4
+	 Signature algorithm name: SHA1withRSA
+	 Version: 3
+
+
+*******************************************
+*******************************************
+
+

@@ -1,9 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="questions_bees">
-        <item>Where are you located?</item>
-        <item>What type of bee is it?</item>
-        <item>How many other bees are around?</item>
-        <item>What type of flower is the bee pollinating?</item>
+        <item>What kind of pollinator is it?</item>
+        <item>Is the sky?</item>
+        <item>Is the wind?</item>
+        <item>Is the temperature?</item>
+        <item>Does it collect every time it visits the flower?</item>
+        <item>Does it visit more than one flower on the plant?</item>
+        <item>What size is the flower?</item>
+        <item>Does it sit around the plant?</item>
+        <item>Does it fly around the plant?</item>
+        <item>Does it visit multiple flowers on a single plant in a regular pattern?</item>
+    </string-array>
+
+    <string-array name="question_options_what_kind">
+        <item>Bee</item>
+        <item>Wasp</item>
+        <item>Beetle</item>
+        <item>Fly</item>
+        <item>Butterfly</item>
+        <item>Moth</item>
+        <item>Hummingbird</item>
+        <item>Bat</item>
+        <item>Ant</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_sky">
+        <item>Clear</item>
+        <item>Partly cloudy</item>
+        <item>Mostly cloudy</item>
+        <item>Overcast</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_wind">
+        <item>Still</item>
+        <item>Light Breeze</item>
+        <item>Windy</item>
+        <item>Gusty</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_temperature">
+        <item>10</item>
+        <item>16</item>
+        <item>21</item>
+        <item>27</item>
+        <item>32</item>
+        <item>38</item>
+    </string-array>
+
+    <string-array name="question_options_what_size_is_the_flower">
+        <item>Smaller that 1 inch</item>
+        <item>As big as 3 inches</item>
+        <item>Bigger than 3 inches</item>
     </string-array>
 </resources>

@@ -1,0 +1,27 @@
+
+Keystore type: JKS
+Keystore provider: SUN
+
+Your keystore contains 1 entry
+
+Alias name: debug-key
+Creation date: Nov 14, 2014
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=Ted Papaioannou, OU=CSE Department, O=The Pennsylvania State University, L=University Park, ST=Pennsylvania, C=US
+Issuer: CN=Ted Papaioannou, OU=CSE Department, O=The Pennsylvania State University, L=University Park, ST=Pennsylvania, C=US
+Serial number: 54662952
+Valid from: Fri Nov 14 11:09:54 EST 2014 until: Tue Nov 08 11:09:54 EST 2039
+Certificate fingerprints:
+	 MD5:  E8:F6:16:62:23:98:EC:45:51:E2:CD:A8:08:CF:C0:A8
+	 SHA1: 22:40:1C:15:AC:21:49:72:19:D7:7F:3D:FF:13:42:ED:4F:EC:6D:35
+	 SHA256: 8A:01:C4:AF:93:B6:21:17:EB:CE:6F:2F:4E:E8:01:06:97:C0:62:B1:ED:96:1D:3D:1B:2A:F7:F3:57:3D:86:F8
+	 Signature algorithm name: SHA1withRSA
+	 Version: 3
+
+
+*******************************************
+*******************************************
+
+
