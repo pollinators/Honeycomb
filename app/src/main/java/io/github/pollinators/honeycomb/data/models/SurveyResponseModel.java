@@ -65,13 +65,6 @@ public class SurveyResponseModel extends AbstractModel {
      */
     private long[] answerIds;
 
-    /**
-     * NOT PERSISTED<br>
-     * Number of questions to be answered
-     * TODO: Make non-magic number
-     */
-    private int questionCount = 10;
-
     //**********************************************************************************************
     // GETTERS
     //**********************************************************************************************
@@ -128,10 +121,6 @@ public class SurveyResponseModel extends AbstractModel {
 
     public long[] getAnswerIds() {
         return answerIds;
-    }
-
-    public int getQuestionCount() {
-        return questionCount;
     }
 
     //**********************************************************************************************

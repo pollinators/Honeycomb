@@ -16,10 +16,8 @@ import butterknife.InjectView;
 import io.github.pollinators.honeycomb.R;
 import io.github.pollinators.honeycomb.data.api.Saveable;
 import io.github.pollinators.honeycomb.data.api.ViewData;
-import io.github.pollinators.honeycomb.survey.MedoraSurvey;
 import io.github.pollinators.honeycomb.survey.Survey;
 import io.github.pollinators.honeycomb.util.Events;
-import io.github.pollinators.honeycomb.view.NumberPickerView;
 import io.github.pollinators.honeycomb.view.RadioMultiChoiceView;
 import io.github.pollinators.honeycomb.view.YesNoView;
 
@@ -48,39 +46,19 @@ public class QuestionFragment extends PollinatorsBaseFragment implements Saveabl
 
         questionTextView.setText(question.text);
 
-        switch(questionId) {
-            case MedoraSurvey.QUESTION_WHAT_KIND:
-                viewData = new RadioMultiChoiceView(getActivity(), null, Arrays.asList(question.answerOptions));
-                break;
-            case MedoraSurvey.QUESTION_SKY:
-                viewData = new RadioMultiChoiceView(getActivity(), null, Arrays.asList(question.answerOptions));
-                break;
-            case MedoraSurvey.QUESTION_WIND:
-                viewData = new RadioMultiChoiceView(getActivity(), null, Arrays.asList(question.answerOptions));
-                break;
-            case MedoraSurvey.QUESTION_TEMP:
-                viewData = new NumberPickerView(getActivity(), null, 1, 3);
-                break;
-            case MedoraSurvey.QUESTION_COLLECT_EVERY_TIME:
+        switch(question.getType()) {
+            case Survey.TYPE_TEXT:
                 viewData = new YesNoView(getActivity(), null);
                 break;
-            case MedoraSurvey.QUESTION_VISIT_MORE_THAN_ONCE:
-                viewData = new YesNoView(getActivity(), null);
-                break;
-            case MedoraSurvey.QUESTION_SIZE_OF_FLOWER:
+            case Survey.TYPE_RADIO_MULTI_CHOICE:
                 viewData = new RadioMultiChoiceView(getActivity(), null, Arrays.asList(question.answerOptions));
                 break;
-            case MedoraSurvey.QUESTION_SIT_AROUND:
-                viewData = new YesNoView(getActivity(), null);
-                break;
-            case MedoraSurvey.QUESTION_FLY_AROUND:
-                viewData = new YesNoView(getActivity(), null);
-                break;
-            case MedoraSurvey.QUESTION_VISIT_IN_PATTERN:
+            case Survey.TYPE_YN:
                 viewData = new YesNoView(getActivity(), null);
                 break;
             default:
                 viewData = new YesNoView(getActivity(), null);
+                break;
         }
 
         if (container.getChildCount() > 0) {

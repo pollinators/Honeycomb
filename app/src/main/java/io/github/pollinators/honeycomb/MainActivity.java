@@ -4,7 +4,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.view.Menu;
@@ -30,6 +35,7 @@ import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
 import io.github.pollinators.honeycomb.fragment.NavigationDrawerFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragmentBuilder;
+import io.github.pollinators.honeycomb.module.MediaModule;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.MedoraSurvey;
 import io.github.pollinators.honeycomb.survey.Survey;
@@ -44,6 +50,9 @@ public class MainActivity extends PollinatorsBaseActivity
     @Inject SharedPreferences sharedPrefs;
     @Inject LocationClient mLocationClient;
     @Inject SQLiteOpenHelper dbHelper;
+    @Inject MediaFileStore mediaFileStore;
+
+    Uri imageUri;
 
     QuestionFragment questionFragment;
 
@@ -78,6 +87,7 @@ public class MainActivity extends PollinatorsBaseActivity
     public MainActivity() {
         super();
         getModules().add(new QuestionModule());
+        getModules().add(new MediaModule());
         getModules().add(new GooglePlayServicesClientModule());
     }
 
@@ -158,7 +168,26 @@ public class MainActivity extends PollinatorsBaseActivity
 
     @Override
     protected void onPause() {
+        mLocationClient.disconnect();
         super.onPause();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Image captured and saved to fileUri specified in the Intent
+                toaster.toast("Image saved to:\n" + imageUri.toString());
+
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                mediaScanIntent.setData(imageUri);
+                sendBroadcast(mediaScanIntent);
+            } else if (resultCode == RESULT_CANCELED) {
+                // User cancelled the image capture
+            } else {
+                // Image capture failed, advise user
+            }
+        }
     }
 
     @Override
@@ -168,17 +197,18 @@ public class MainActivity extends PollinatorsBaseActivity
         if (questionFragment != null) {
             saveQuestionData(null);
 
-            if (position < 0) {
+            if (position < 0 || (position >= survey.getQuestionCount())) {
                 currentPosition = 0;
-            } else if (position >= survey.getQuestionCount()) {
-                currentPosition = survey.getQuestionCount() - 1;
+                mNavigationDrawerFragment.show();
             } else {
                 currentPosition = position;
             }
+
             questionFragment.setQuestion(currentPosition);
             retreiveQuestionData(null);
         }
     }
+
 
     @Subscribe
     public void saveQuestionData(Events.SaveQuestionDataEvent event) {
@@ -187,12 +217,12 @@ public class MainActivity extends PollinatorsBaseActivity
             return;
         }
 
-        Survey.SurveyQuestion<String> s = survey.getQuestion(currentPosition);
+        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
 
         SurveyAnswer answer = surveyDataSource.getAnswer(surveyResponse, currentPosition);
 
         try {
-            switch (s.type) {
+            switch (sq.getType()) {
                 case MedoraSurvey.TYPE_YN:
                     answer.setBoolAnswer((Boolean) data);
                     break;
@@ -217,14 +247,15 @@ public class MainActivity extends PollinatorsBaseActivity
 
     @Subscribe
     public void retreiveQuestionData(Events.RetreiveQuestionDataEvent event) {
-        Survey.SurveyQuestion<String> s = survey.getQuestion(currentPosition);
+        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
         SurveyAnswer answer = surveyDataSource.getAnswer(surveyResponse, currentPosition);
+        // TODO: Null check answer in production
 
         try {
             Object data;
 
-            switch (s.type) {
-                case MedoraSurvey.TYPE_YN:
+            switch (sq.getType()) {
+               case MedoraSurvey.TYPE_YN:
                     data = answer.getBoolAnswer();
                     break;
                 case MedoraSurvey.TYPE_NUMERIC:
@@ -282,6 +313,8 @@ public class MainActivity extends PollinatorsBaseActivity
         return super.onCreateOptionsMenu(menu);
     }
 
+    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -301,9 +334,22 @@ public class MainActivity extends PollinatorsBaseActivity
            onNavigationDrawerItemSelected(currentPosition - 1);
         } else if (id == R.id.action_submit) {
             submitSurvey();
+        } else if (id == R.id.action_camera) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            imageUri = mediaFileStore.getImageFileUri();
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onNextSelected() {
+        onNavigationDrawerItemSelected(currentPosition + 1);
+    }
+
+    private void onPreviousSelected() {
+        onNavigationDrawerItemSelected(currentPosition - 1);
     }
 
     private void submitSurvey() {

@@ -14,25 +14,19 @@ import io.github.pollinators.honeycomb.R;
  */
 public class MedoraSurvey extends Survey {
 
-
-    public final static int TYPE_TEXT = 0;
-    public final static int TYPE_NUMERIC = 1;
-    public final static int TYPE_YN = 2;
-    public final static int TYPE_RADIO_MULTI_CHOICE = 3;
-    public final static int TYPE_SPINNER_MULTI_CHOICE = 4;
-    public final static int TYPE_NUMBER_PICKER = 5;
-
     // All of the questions in order of the string-arrays resource
     public final static int QUESTION_WHAT_KIND = 0;
-    public final static int QUESTION_SKY = 1;
-    public final static int QUESTION_WIND = 2;
-    public final static int QUESTION_TEMP = 3;
-    public final static int QUESTION_COLLECT_EVERY_TIME = 4;
-    public final static int QUESTION_VISIT_MORE_THAN_ONCE = 5;
-    public final static int QUESTION_SIZE_OF_FLOWER = 6;
-    public final static int QUESTION_SIT_AROUND = 7;
-    public final static int QUESTION_FLY_AROUND = 8;
-    public final static int QUESTION_VISIT_IN_PATTERN = 9;
+    public final static int QUESTION_ANOTHER_NAME = 1;
+    public final static int QUESTION_PLANT_TYPE = 2;
+    public final static int QUESTION_SKY = 3;
+    public final static int QUESTION_WIND = 4;
+    public final static int QUESTION_TEMP = 5;
+    public final static int QUESTION_FLOWER_COLOR = 6;
+    public final static int QUESTION_FLOWER_SIZE = 7;
+    public final static int QUESTION_COLLECT_EVERY_TIME = 8;
+    public final static int QUESTION_VISIT_MORE_THAN_ONCE = 9;
+    public final static int QUESTION_SIT_AROUND = 10;
+    public final static int QUESTION_VISIT_IN_PATTERN = 11;
 
     private String[] questionStrings;
 
@@ -42,16 +36,54 @@ public class MedoraSurvey extends Survey {
         questionStrings = resources.getStringArray(R.array.questions_bees);
 
         questions = new ArrayList<SurveyQuestion<String>>();
-        addQuestion(QUESTION_WHAT_KIND, TYPE_RADIO_MULTI_CHOICE, R.array.question_options_what_kind);
-        addQuestion(QUESTION_SKY, TYPE_RADIO_MULTI_CHOICE, R.array.question_options_is_the_sky);
-        addQuestion(QUESTION_WIND, TYPE_RADIO_MULTI_CHOICE, R.array.question_options_is_the_wind);
-        addQuestion(QUESTION_TEMP, TYPE_NUMBER_PICKER, null);
-        addQuestion(QUESTION_COLLECT_EVERY_TIME, TYPE_YN, null);
-        addQuestion(QUESTION_VISIT_MORE_THAN_ONCE, TYPE_YN, null);
-        addQuestion(QUESTION_SIZE_OF_FLOWER, TYPE_RADIO_MULTI_CHOICE, R.array.question_options_what_size_is_the_flower);
-        addQuestion(QUESTION_SIT_AROUND, TYPE_YN, null);
-        addQuestion(QUESTION_FLY_AROUND, TYPE_YN, null);
-        addQuestion(QUESTION_VISIT_IN_PATTERN, TYPE_YN, null);
+
+        addQuestion(QUESTION_WHAT_KIND,
+                TYPE_RADIO_MULTI_CHOICE,
+                R.array.question_options_what_kind_of_pollinator);
+
+        addQuestion(QUESTION_ANOTHER_NAME,
+                TYPE_TEXT | FLAG_OPTIONAL,
+                null);
+
+        addQuestion(QUESTION_PLANT_TYPE,
+                TYPE_RADIO_MULTI_CHOICE,
+                R.array.question_options_what_kind_of_plant);
+
+        addQuestion(QUESTION_SKY,
+                TYPE_RADIO_MULTI_CHOICE,
+                R.array.question_options_is_the_sky);
+
+        addQuestion(QUESTION_WIND,
+                TYPE_RADIO_MULTI_CHOICE,
+                R.array.question_options_is_the_wind);
+
+        addQuestion(QUESTION_TEMP,
+                TYPE_NUMBER_PICKER | FLAG_OTHER,
+                null);
+
+        addQuestion(QUESTION_FLOWER_COLOR,
+                TYPE_COLOR_PICKER | FLAG_OTHER,
+                R.array.question_options_flower_color);
+
+        addQuestion(QUESTION_FLOWER_SIZE,
+                TYPE_RADIO_MULTI_CHOICE | FLAG_NULLABLE,
+                R.array.question_options_what_size_is_the_flower);
+
+        addQuestion(QUESTION_COLLECT_EVERY_TIME,
+                TYPE_YN | FLAG_NULLABLE,
+                null);
+
+        addQuestion(QUESTION_VISIT_MORE_THAN_ONCE,
+                TYPE_YN | FLAG_NULLABLE,
+                null);
+
+        addQuestion(QUESTION_SIT_AROUND,
+                TYPE_YN | FLAG_NULLABLE,
+                null);
+
+        addQuestion(QUESTION_VISIT_IN_PATTERN,
+                TYPE_YN | FLAG_NULLABLE,
+                null);
     }
 
     private void addQuestion(int index, int type, @Nullable Integer answerOptionsId) {

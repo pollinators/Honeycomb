@@ -175,7 +175,7 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
         // If the user hasn't 'learned' about the drawer, open it to introduce them to the drawer,
         // per the navigation drawer design guidelines.
         if (!mUserLearnedDrawer && !mFromSavedInstanceState) {
-            mDrawerLayout.openDrawer(mFragmentContainerView);
+            show();
         }
 
         // Defer code dependent on restoration of previous instance state.
@@ -187,6 +187,10 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
         });
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+
+    public void show() {
+        mDrawerLayout.openDrawer(mFragmentContainerView);
     }
 
     private void selectItem(int position) {

@@ -22,7 +22,7 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
 
     @Override
     public String getTableName() {
-        return SurveySQLiteHelper.TABLE_DEF_SURVEY_DATA;
+        return SurveySQLiteHelper.TABLE_SURVEY_DATA;
     }
 
     //**********************************************************************************************
@@ -71,7 +71,7 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
                     SurveySQLiteHelper.COLUMN_SURVEY_DATA_ID + " = " + id,
                     null, null, null, null);
 
-            long[] answerIds = new long[model.getQuestionCount()];
+            long[] answerIds = new long[questionCount];
 
             int i = 0;
             if (cursor.moveToFirst()) {

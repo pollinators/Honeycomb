@@ -2,27 +2,34 @@
 <resources>
     <string-array name="questions_bees">
         <item>What kind of pollinator is it?</item>
+        <item>Do you have another name for the pollinator?</item>
+        <item>What kind of plant is it?</item>
         <item>Is the sky?</item>
         <item>Is the wind?</item>
-        <item>Is the temperature?</item>
-        <item>Does it collect every time it visits the flower?</item>
-        <item>Does it visit more than one flower on the plant?</item>
+        <item>What is the temperature?</item>
+        <item>What color is the flower?</item>
         <item>What size is the flower?</item>
-        <item>Does it sit around the plant?</item>
-        <item>Does it fly around the plant?</item>
-        <item>Does it visit multiple flowers on a single plant in a regular pattern?</item>
+        <item>Does the pollinator collect every time it visits the flower?</item>
+        <item>Does the pollinator visit more than one flower on the plant?</item>
+        <item>Does the pollinator sit around the plant?</item>
+        <item>During a single observation, does the pollinator visit multiple flowers on a single plant in a regular pattern?</item>
     </string-array>
 
-    <string-array name="question_options_what_kind">
+    <string-array name="question_options_what_kind_of_pollinator">
         <item>Bee</item>
         <item>Wasp</item>
-        <item>Beetle</item>
-        <item>Fly</item>
         <item>Butterfly</item>
         <item>Moth</item>
-        <item>Hummingbird</item>
+        <item>Bird</item>
         <item>Bat</item>
-        <item>Ant</item>
+    </string-array>
+
+    <string-array name="question_options_what_kind_of_plant">
+        <item>Potato</item>
+        <item>Pepper</item>
+        <item>Cactus</item>
+        <item>Squash</item>
+        <item>Fruit Tree</item>
     </string-array>
 
     <string-array name="question_options_is_the_sky">
@@ -40,12 +47,23 @@
     </string-array>
 
     <string-array name="question_options_is_the_temperature">
-        <item>10</item>
-        <item>16</item>
-        <item>21</item>
-        <item>27</item>
-        <item>32</item>
-        <item>38</item>
+        <item>50</item>
+        <item>60</item>
+        <item>70</item>
+        <item>80</item>
+        <item>90</item>
+        <item>100</item>
+    </string-array>
+
+    <string-array name="question_options_flower_color">
+        <item>Red</item>
+        <item>Orange</item>
+        <item>Yellow</item>
+        <item>Green</item>
+        <item>Blue</item>
+        <item>Purple</item>
+        <item>White</item>
+        <item>Other</item>
     </string-array>
 
     <string-array name="question_options_what_size_is_the_flower">

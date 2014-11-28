@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="questions_bees">
+        <item>Qué tipo de polinizador es?</item>
+        <item>Hay otra nombre para polinizador?</item>
+        <item>Qué tipo planta es?</item>
+        <item>El cielo está?</item>
+        <item>El viento está</item>
+        <item>La temperature está mas cerca a</item>
+        <item>Qué color es la flor?</item>
+        <item>Qué tomaño es la flor?</item>
+        <item>Qué recoge cada vez que visita la flor?</item>
+        <item>Visita más de una flor en la planta?</item>
+        <item>Se sienta en los alrededores de la planta?</item>
+        <item>Visita, en pauta habitual, las flores de una sola planta?</item>
+    </string-array>
+
+
+    <string-array name="question_options_what_kind_of_pollinator">
+        <item>abeja</item>
+        <item>avispa</item>
+        <item>mariposa</item>
+        <item>polilla</item>
+        <item>pájaro</item>
+        <item>murciélago</item>
+        <item>otro (escribalo)</item>
+    </string-array>
+
+    <string-array name="question_options_what_kind_of_plant">
+        <item>papa</item>
+        <item>rocoto</item>
+        <item>tuna</item>
+        <item>cucurbitácea</item>
+        <item>árbol frutal</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_sky">
+        <item>claro</item>
+        <item>parcialmente nublado</item>
+        <item>nublado en su mayor parte</item>
+        <item>nublado</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_wind">
+        <item>apaciguado</item>
+        <item>como una brisa suave</item>
+        <item>ventoso</item>
+        <item>raceado</item>
+    </string-array>
+
+    <string-array name="question_options_is_the_temperature">
+        <item>10°</item>
+        <item>16°</item>
+        <item>21°</item>
+        <item>27°</item>
+        <item>32°</item>
+        <item>38°</item>
+    </string-array>
+
+    <string-array name="question_options_flower_color">
+        <item>roja</item>
+        <item>naranja</item>
+        <item>amarillo</item>
+        <item>verde</item>
+        <item>azul</item>
+        <item>morado</item>
+        <item>blanca</item>
+    </string-array>
+
+    <string-array name="question_options_what_size_is_the_flower">
+        <item>menos 1 pulgada</item>
+        <item>en igual medida 3 pulgadas</item>
+        <item>más de 3 pulgadas</item>
+    </string-array>
+</resources>
