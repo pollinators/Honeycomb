@@ -47,12 +47,12 @@ public class SurveyResponseModel extends AbstractModel {
     /**
      * The latitude coordinate obtained where the survey took place
      */
-    private float latitude;
+    private Float latitude;
 
     /**
      * The longitude coordinate obtained where the survey took place
      */
-    private float longitude;
+    private Float longitude;
 
     /**
      * This is a numeric indicator of which set of questions to use so that we can easily
@@ -61,9 +61,16 @@ public class SurveyResponseModel extends AbstractModel {
     private int questionSet;
 
     /**
-     * Not persisted
+     * NOT PERSISTED<br>
      */
     private long[] answerIds;
+
+    /**
+     * NOT PERSISTED<br>
+     * Number of questions to be answered
+     * TODO: Make non-magic number
+     */
+    private int questionCount = 10;
 
     //**********************************************************************************************
     // GETTERS
@@ -85,11 +92,11 @@ public class SurveyResponseModel extends AbstractModel {
         return duration;
     }
 
-    public float getLatitude() {
+    public Float getLatitude() {
         return latitude;
     }
 
-    public float getLongitude() {
+    public Float getLongitude() {
         return longitude;
     }
 
@@ -123,6 +130,10 @@ public class SurveyResponseModel extends AbstractModel {
         return answerIds;
     }
 
+    public int getQuestionCount() {
+        return questionCount;
+    }
+
     //**********************************************************************************************
     // SETTERS
     //**********************************************************************************************
@@ -150,11 +161,11 @@ public class SurveyResponseModel extends AbstractModel {
         this.duration = duration;
     }
 
-    public void setLongitude(float longitude) {
+    public void setLongitude(Float longitude) {
         this.longitude = longitude;
     }
 
-    public void setLatitude(float latitude) {
+    public void setLatitude(Float latitude) {
         this.latitude = latitude;
     }
 

@@ -1,5 +1,6 @@
 package io.github.pollinators.honeycomb;
 
+import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.os.Bundle;
 
@@ -15,10 +16,16 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.sql.SQLException;
+
 import javax.inject.Inject;
 
 import dagger.Module;
 import dagger.Provides;
+import io.github.pollinators.honeycomb.data.SurveyDataSource;
+import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
+import io.github.pollinators.honeycomb.module.QuestionModule;
+import io.github.pollinators.honeycomb.survey.Survey;
 
 public class MapsActivity extends PollinatorsBaseActivity {
 
@@ -27,6 +34,8 @@ public class MapsActivity extends PollinatorsBaseActivity {
     //**********************************************************************************************
 
     @Inject LocationClient mLocationClient;
+    @Inject Survey survey;
+    @Inject SQLiteOpenHelper dbHelper;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -45,6 +54,7 @@ public class MapsActivity extends PollinatorsBaseActivity {
 
     public MapsActivity() {
         super();
+        getModules().add(new QuestionModule());
         getModules().add(new GooglePlayServicesClientModule());
     }
 
@@ -65,6 +75,21 @@ public class MapsActivity extends PollinatorsBaseActivity {
         setUpMapIfNeeded();
         mLocationClient.connect();
 
+        SurveyDataSource data = new SurveyDataSource(dbHelper, survey.getQuestionCount());
+        try {
+            data.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+//        SurveyResponseModel model = data.get(31);
+//        LatLng loc = new LatLng(model.getLatitude(), model.getLongitude());
+//        mMap.addMarker(new MarkerOptions()
+//                .position(loc)
+//                .draggable(true)
+//                .title("Me :)"));
+//
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
     }
 
     /*

@@ -2,6 +2,8 @@ package io.github.pollinators.honeycomb;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -9,15 +11,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v4.widget.DrawerLayout;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.squareup.otto.Subscribe;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 
 import javax.inject.Inject;
 
+import dagger.Module;
+import dagger.Provides;
 import io.github.pollinators.honeycomb.data.SurveyDataSource;
 import io.github.pollinators.honeycomb.data.models.SurveyAnswer;
 import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
@@ -36,6 +42,8 @@ public class MainActivity extends PollinatorsBaseActivity
 {
     @Inject Survey survey;
     @Inject SharedPreferences sharedPrefs;
+    @Inject LocationClient mLocationClient;
+    @Inject SQLiteOpenHelper dbHelper;
 
     QuestionFragment questionFragment;
 
@@ -55,6 +63,24 @@ public class MainActivity extends PollinatorsBaseActivity
 
     SurveyDataSource surveyDataSource;
 
+    LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            toaster.toast("Location has changed");
+            if (surveyResponse != null) {
+                //TODO: Change casting
+                surveyResponse.setLatitude((float) location.getLatitude());
+                surveyResponse.setLongitude((float) location.getLongitude());
+            }
+        }
+    };
+
+    public MainActivity() {
+        super();
+        getModules().add(new QuestionModule());
+        getModules().add(new GooglePlayServicesClientModule());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +96,7 @@ public class MainActivity extends PollinatorsBaseActivity
         super.onStart();
 
         // Open the database
-        surveyDataSource = new SurveyDataSource(this);
+        surveyDataSource = new SurveyDataSource(dbHelper, survey.getQuestionCount());
         try {
             surveyDataSource.open();
         } catch (SQLException e) {
@@ -115,10 +141,10 @@ public class MainActivity extends PollinatorsBaseActivity
 
         if (currentSurveyResponseId < 1) {
             // If surveyId is invalid, create a new surveyResponse
-            surveyResponse = surveyDataSource.createResponse(survey.getQuestionCount());
+            surveyResponse = surveyDataSource.create();
             sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, surveyResponse.getId()).commit();
         } else {
-            surveyResponse = surveyDataSource.getResponse(currentSurveyResponseId);
+            surveyResponse = surveyDataSource.get(currentSurveyResponseId);
         }
 
         // TODO: Take this out of production code
@@ -126,6 +152,8 @@ public class MainActivity extends PollinatorsBaseActivity
             Timber.w("The survey response was null. Not good");
             throw new NullPointerException("The survey response was null. Not good");
         }
+
+        mLocationClient.connect();
     }
 
     @Override
@@ -279,18 +307,49 @@ public class MainActivity extends PollinatorsBaseActivity
     }
 
     private void submitSurvey() {
-        surveyDataSource.saveResponse(surveyResponse);
+        surveyResponse.setSurveyEnded(true);
+        surveyDataSource.save(surveyResponse);
         toaster.toast("Submission successful");
 
         // Create a new survey to take it's place
-        surveyResponse = surveyDataSource.createResponse(survey.getQuestionCount());
+        surveyResponse = surveyDataSource.create();
         questionFragment.setCurrentData(null);
     }
 
-    @Override
-    protected List<Object> getModules() {
-        List<Object> list = new ArrayList<Object>(super.getModules());
-        list.add(new QuestionModule());
-        return list;
+    //**********************************************************************************************
+    // Modules
+    //**********************************************************************************************
+
+    @Module(library = true)
+    public class GooglePlayServicesClientModule {
+
+        @Provides
+        GooglePlayServicesClient.ConnectionCallbacks provideConnectionCallbacks() {
+            return new GooglePlayServicesClient.ConnectionCallbacks() {
+                @Override
+                public void onConnected(Bundle bundle) {
+                    LocationRequest lr = LocationRequest.create();
+                    lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    lr.setInterval(5000);
+                    lr.setFastestInterval(1000);
+
+                    mLocationClient.requestLocationUpdates(lr, locationListener);
+                }
+
+                @Override
+                public void onDisconnected() {
+
+                }
+            };
+        }
+
+        @Provides GooglePlayServicesClient.OnConnectionFailedListener providedConnectionFailedListener() {
+            return new GooglePlayServicesClient.OnConnectionFailedListener() {
+                @Override
+                public void onConnectionFailed(ConnectionResult connectionResult) {
+
+                }
+            };
+        }
     }
 }

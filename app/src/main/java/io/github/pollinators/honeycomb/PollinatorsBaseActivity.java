@@ -15,6 +15,7 @@ import butterknife.ButterKnife;
 import dagger.ObjectGraph;
 import io.github.pollinators.honeycomb.module.ActivityModule;
 import io.github.pollinators.honeycomb.util.Utils;
+import timber.log.Timber;
 
 /**
  * Created by ted on 11/1/14.
@@ -36,6 +37,7 @@ public abstract class PollinatorsBaseActivity extends ActionBarActivity {
     public void setContentView(int layoutResID) {
         super.setContentView(layoutResID);
         ButterKnife.inject(this);
+        Timber.d("Just injected the class");
     }
 
     @Override
