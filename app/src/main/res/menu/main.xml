@@ -4,11 +4,13 @@
     tools:context=".MainActivity">
     <item
         android:id="@+id/action_camera"
-        android:title="Snapadickpic"
+        android:title="Camera"
+        android:icon="@android:drawable/ic_menu_camera"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_map"
         android:title="Map"
+        android:icon="@android:drawable/ic_menu_mapmode"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_previous"

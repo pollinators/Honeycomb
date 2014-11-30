@@ -7,26 +7,15 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import io.github.pollinators.honeycomb.MediaFileStore;
 import timber.log.Timber;
 
 /**
  * Created by ted on 11/28/14.
  */
-public class MediaUtils implements MediaFileStore {
+public class MediaUtils {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
-
-    @Override
-    public Uri getImageFileUri() {
-        return getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-    }
-
-    @Override
-    public Uri getVideoFileUri() {
-        return getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-    }
 
     /**
      * Create a file Uri for saving an image or video

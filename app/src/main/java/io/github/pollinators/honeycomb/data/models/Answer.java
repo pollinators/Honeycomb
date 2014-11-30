@@ -3,18 +3,35 @@ package io.github.pollinators.honeycomb.data.models;
 /**
  * Created by ted on 11/3/14.
  */
-public class SurveyAnswer extends AbstractModel {
+// Create these annotations to hadnle my bidding.
+
+// Will connected the classes (POJO) data to the network. Searching  best matching nam with the class
+// You may annotate as @DoesNotTransfer if
+//@NetworkConnected
+//@Saveable
+public class Answer extends AbstractModel {
+
+    //**********************************************************************************************
+    // NON-STATIC DATA MEMBERS
+    //**********************************************************************************************
 
     private String textAnswer;
     private Integer intAnswer;
     private Double realAnswer;
     private byte[] blobAnswer;
 
-    //**********************************************************************************************
-    // GETTERS
-    //**********************************************************************************************
+    public void clearData() {
+        textAnswer = null;
+        intAnswer = null;
+        realAnswer = null;
+        blobAnswer = null;
+    }
 
-    public boolean getBoolAnswer() {
+    public Boolean getBoolAnswer() {
+        if (intAnswer == null) {
+            return null;
+        }
+
         return (intAnswer != 0);
     }
 
@@ -34,12 +51,12 @@ public class SurveyAnswer extends AbstractModel {
         return blobAnswer;
     }
 
-    //**********************************************************************************************
-    // SETTERS
-    //**********************************************************************************************
-
     public void setBoolAnswer(Boolean boolAnswer) {
-        setIntAnswer(boolAnswer ? 1 : 0);
+        if (boolAnswer == null) {
+            setIntAnswer(null);
+        } else {
+            setIntAnswer(boolAnswer ? 1 : 0);
+        }
     }
 
     public void setTextAnswer(String textAnswer) {

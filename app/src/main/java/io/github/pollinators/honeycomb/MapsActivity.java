@@ -22,8 +22,7 @@ import javax.inject.Inject;
 
 import dagger.Module;
 import dagger.Provides;
-import io.github.pollinators.honeycomb.data.SurveyDataSource;
-import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
+import io.github.pollinators.honeycomb.data.ResponseDataSource;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.Survey;
 
@@ -75,7 +74,7 @@ public class MapsActivity extends PollinatorsBaseActivity {
         setUpMapIfNeeded();
         mLocationClient.connect();
 
-        SurveyDataSource data = new SurveyDataSource(dbHelper, survey.getQuestionCount());
+        ResponseDataSource data = new ResponseDataSource(dbHelper, survey.getQuestionCount());
         try {
             data.open();
         } catch (SQLException e) {

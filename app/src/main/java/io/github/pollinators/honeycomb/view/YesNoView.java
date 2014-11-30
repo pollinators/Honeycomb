@@ -6,23 +6,28 @@ import android.util.AttributeSet;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
-import javax.inject.Inject;
-
-import io.github.pollinators.honeycomb.data.api.ViewData;
+import io.github.pollinators.honeycomb.data.api.DataView;
+import timber.log.Timber;
 
 /**
  * Created by ted on 11/2/14.
  */
 
-public class YesNoView extends RadioGroup implements ViewData<Boolean> {
+public class YesNoView extends RadioGroup implements DataView<Boolean> {
 
     RadioButton yesButton;
     RadioButton noButton;
+    RadioButton clearButton;
 
     @Override
     public void setData(Boolean data) {
         if (data == null) {
-            clearCheck();
+            if (clearButton != null) {
+                clearButton.setChecked(true);
+            } else {
+                clearCheck();
+                Timber.d("Data was null and cleared checks");
+            }
             return;
         }
 
@@ -35,11 +40,15 @@ public class YesNoView extends RadioGroup implements ViewData<Boolean> {
 
     @Override
     public Boolean getData() {
+        if ((clearButton != null) && (clearButton.isChecked())) {
+            Timber.d("Returning null");
+            return null;
+        }
+
         return yesButton.isChecked();
     }
 
-
-    @Inject public YesNoView(Context context, @Nullable AttributeSet attrs) {
+    public YesNoView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
 //        ButterKnife.inject(this, View.inflate(getContext(), R.layout.view_yes_no, null));
@@ -51,5 +60,21 @@ public class YesNoView extends RadioGroup implements ViewData<Boolean> {
 
         addView(yesButton);
         addView(noButton);
+    }
+
+    /**
+     * Add an extra radio button to clear the data (presented to the user as "I don't know")
+     * @param isNullable
+     */
+    public void setNullable(boolean isNullable) {
+        if (isNullable && clearButton == null) {
+            clearButton = new RadioButton(getContext());
+            clearButton.setText("I don't know");
+            addView(clearButton);
+            clearButton.setChecked(true);
+        } else if (!isNullable && clearButton != null) {
+            removeView(clearButton);
+            clearButton = null;
+        }
     }
 }

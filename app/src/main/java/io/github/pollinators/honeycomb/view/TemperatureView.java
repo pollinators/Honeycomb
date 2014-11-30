@@ -5,12 +5,12 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
-import io.github.pollinators.honeycomb.data.api.ViewData;
+import io.github.pollinators.honeycomb.data.api.DataView;
 
 /**
  * Created by ted on 11/2/14.
  */
-public class TemperatureView extends EditText implements ViewData<Double> {
+public class TemperatureView extends EditText implements DataView<Double> {
 
     public TemperatureView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -24,5 +24,10 @@ public class TemperatureView extends EditText implements ViewData<Double> {
     @Override
     public Double getData() {
         return Double.parseDouble(getText().toString());
+    }
+
+    @Override
+    public void setNullable(boolean isNullable) {
+
     }
 }

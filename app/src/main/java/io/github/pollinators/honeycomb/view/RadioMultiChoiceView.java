@@ -9,13 +9,13 @@ import android.widget.RadioGroup;
 import java.util.List;
 
 import butterknife.ButterKnife;
-import io.github.pollinators.honeycomb.data.api.ViewData;
+import io.github.pollinators.honeycomb.data.api.DataView;
 
 /**
  * Created by ted on 11/2/14.
  */
 
-public class RadioMultiChoiceView extends RadioGroup implements ViewData<String> {
+public class RadioMultiChoiceView extends RadioGroup implements DataView<String> {
 
     List<String> choices;
 
@@ -45,6 +45,11 @@ public class RadioMultiChoiceView extends RadioGroup implements ViewData<String>
             return button.getText().toString();
         }
         return null;
+    }
+
+    @Override
+    public void setNullable(boolean isNullable) {
+
     }
 
 

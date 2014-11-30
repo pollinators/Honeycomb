@@ -6,10 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.view.Menu;
@@ -29,9 +26,14 @@ import javax.inject.Inject;
 
 import dagger.Module;
 import dagger.Provides;
-import io.github.pollinators.honeycomb.data.SurveyDataSource;
-import io.github.pollinators.honeycomb.data.models.SurveyAnswer;
-import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
+import io.github.pollinators.honeycomb.data.DataMappingSource;
+import io.github.pollinators.honeycomb.data.ImageDataSource;
+import io.github.pollinators.honeycomb.data.ResponseDataSource;
+import io.github.pollinators.honeycomb.data.SurveySQLiteHelper;
+import io.github.pollinators.honeycomb.data.models.Answer;
+import io.github.pollinators.honeycomb.data.models.Image;
+import io.github.pollinators.honeycomb.data.models.MappingModel;
+import io.github.pollinators.honeycomb.data.models.ResponseData;
 import io.github.pollinators.honeycomb.fragment.NavigationDrawerFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragmentBuilder;
@@ -40,6 +42,7 @@ import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.MedoraSurvey;
 import io.github.pollinators.honeycomb.survey.Survey;
 import io.github.pollinators.honeycomb.util.Events;
+import io.github.pollinators.honeycomb.util.MediaFileStore;
 import timber.log.Timber;
 
 
@@ -58,6 +61,8 @@ public class MainActivity extends PollinatorsBaseActivity
 
     int currentPosition;
 
+    private Location lastLocation;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -68,19 +73,19 @@ public class MainActivity extends PollinatorsBaseActivity
      */
     private CharSequence mTitle;
 
-    private SurveyResponseModel surveyResponse;
+    private ResponseData surveyResponse;
+    private MappingModel<ResponseData, Image> responseDataImage;
 
-    SurveyDataSource surveyDataSource;
+    ResponseDataSource responseDataSource;
+    ImageDataSource imageDataSource;
+    DataMappingSource<ResponseData, Image> responseDataImageDataMappingSource;
 
     LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             toaster.toast("Location has changed");
-            if (surveyResponse != null) {
-                //TODO: Change casting
-                surveyResponse.setLatitude((float) location.getLatitude());
-                surveyResponse.setLongitude((float) location.getLongitude());
-            }
+            lastLocation = location;
+
         }
     };
 
@@ -105,14 +110,7 @@ public class MainActivity extends PollinatorsBaseActivity
     protected void onStart() {
         super.onStart();
 
-        // Open the database
-        surveyDataSource = new SurveyDataSource(dbHelper, survey.getQuestionCount());
-        try {
-            surveyDataSource.open();
-        } catch (SQLException e) {
-            Timber.e(e, "Unexpected error when opening database");
-            surveyDataSource = null;
-        }
+        openDataSources();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -126,13 +124,32 @@ public class MainActivity extends PollinatorsBaseActivity
                 .commit();
     }
 
+    private void openDataSources() {
+        responseDataSource = new ResponseDataSource(dbHelper, survey.getQuestionCount());
+        imageDataSource = new ImageDataSource(dbHelper);
+
+        responseDataImageDataMappingSource = new DataMappingSource<ResponseData, Image>(dbHelper,
+                responseDataSource, imageDataSource);
+
+        try {
+            responseDataSource.open();
+            imageDataSource.open();
+            responseDataImageDataMappingSource.open();
+        } catch (SQLException e) {
+            Timber.e(e, "Unexpected error when opening database");
+            responseDataSource = null;
+            imageDataSource = null;
+            responseDataImageDataMappingSource = null;
+        }
+    }
+
     @Override
     protected void onStop() {
 
         sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, surveyResponse.getId()).commit();
 
         try {
-            surveyDataSource.close();
+            responseDataSource.close();
         } catch (NullPointerException e) {
             Timber.e(e, "The data source was null for some reason. It was probably not opened correctly");
         }
@@ -151,10 +168,10 @@ public class MainActivity extends PollinatorsBaseActivity
 
         if (currentSurveyResponseId < 1) {
             // If surveyId is invalid, create a new surveyResponse
-            surveyResponse = surveyDataSource.create();
+            surveyResponse = responseDataSource.create();
             sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, surveyResponse.getId()).commit();
         } else {
-            surveyResponse = surveyDataSource.get(currentSurveyResponseId);
+            surveyResponse = responseDataSource.get(currentSurveyResponseId);
         }
 
         // TODO: Take this out of production code
@@ -182,6 +199,28 @@ public class MainActivity extends PollinatorsBaseActivity
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(imageUri);
                 sendBroadcast(mediaScanIntent);
+
+
+                // Open the data sources here because they were closed on stop when the camera
+                // intent started and not reopened yet.
+                openDataSources();
+
+                Image image = imageDataSource.create(imageUri);
+
+                // TODO: Maybe null check image in production
+                if (lastLocation != null) {
+                    //TODO: Change casting
+                    image.setLatitude((float) lastLocation.getLatitude());
+                    image.setLongitude((float) lastLocation.getLongitude());
+                }
+                image.setPhotographerUserId(12345l);
+                image.setTitle("This is a picture of my dog");
+
+                mNavigationDrawerFragment.setImageView(imageUri);
+                mNavigationDrawerFragment.show();
+
+                responseDataImage = responseDataImageDataMappingSource.create(surveyResponse, image);
+
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the image capture
             } else {
@@ -213,13 +252,14 @@ public class MainActivity extends PollinatorsBaseActivity
     @Subscribe
     public void saveQuestionData(Events.SaveQuestionDataEvent event) {
         Object data = questionFragment.getCurrentData();
-        if (data == null) {
-            return;
-        }
 
         Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
 
-        SurveyAnswer answer = surveyDataSource.getAnswer(surveyResponse, currentPosition);
+        Answer answer = responseDataSource.getAnswer(surveyResponse, currentPosition);
+
+        if (data == null) {
+            answer.clearData();
+        }
 
         try {
             switch (sq.getType()) {
@@ -237,7 +277,7 @@ public class MainActivity extends PollinatorsBaseActivity
                     break;
             }
 
-            surveyDataSource.saveAnswer(answer);
+            responseDataSource.saveAnswer(answer);
 
         } catch(ClassCastException e) {
             Timber.e(e, "Something happened");
@@ -248,7 +288,7 @@ public class MainActivity extends PollinatorsBaseActivity
     @Subscribe
     public void retreiveQuestionData(Events.RetreiveQuestionDataEvent event) {
         Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
-        SurveyAnswer answer = surveyDataSource.getAnswer(surveyResponse, currentPosition);
+        Answer answer = responseDataSource.getAnswer(surveyResponse, currentPosition);
         // TODO: Null check answer in production
 
         try {
@@ -354,11 +394,18 @@ public class MainActivity extends PollinatorsBaseActivity
 
     private void submitSurvey() {
         surveyResponse.setSurveyEnded(true);
-        surveyDataSource.save(surveyResponse);
+
+        if (lastLocation != null) {
+            //TODO: Change casting
+            surveyResponse.setLatitude((float) lastLocation.getLatitude());
+            surveyResponse.setLongitude((float) lastLocation.getLongitude());
+        }
+
+        responseDataSource.save(surveyResponse);
         toaster.toast("Submission successful");
 
         // Create a new survey to take it's place
-        surveyResponse = surveyDataSource.create();
+        surveyResponse = responseDataSource.create();
         questionFragment.setCurrentData(null);
     }
 

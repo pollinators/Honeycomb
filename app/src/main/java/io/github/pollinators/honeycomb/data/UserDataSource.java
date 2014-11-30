@@ -16,12 +16,7 @@ public class UserDataSource extends AbstractDataSource<User> {
     }
 
     @Override
-    public User create() {
-        return null;
-    }
-
-    @Override
-    public User get(long id) {
+    public ContentValues getInitializerContentValues() {
         return null;
     }
 

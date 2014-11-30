@@ -1,4 +1,4 @@
-package io.github.pollinators.honeycomb;
+package io.github.pollinators.honeycomb.util;
 
 import android.net.Uri;
 

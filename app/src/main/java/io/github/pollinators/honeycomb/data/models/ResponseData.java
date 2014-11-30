@@ -8,7 +8,7 @@ import io.github.pollinators.honeycomb.data.models.AbstractModel;
  * This model represents all possible surveys that could be done. It holds some meta data about the
  * survey, and the responses associated with it.
  */
-public class SurveyResponseModel extends AbstractModel {
+public class ResponseData extends AbstractModel {
 
     //**********************************************************************************************
     // NON-STATIC DATA MEMBERS

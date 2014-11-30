@@ -1,11 +1,13 @@
 package io.github.pollinators.honeycomb.module;
 
+import android.net.Uri;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 import io.github.pollinators.honeycomb.MainActivity;
-import io.github.pollinators.honeycomb.MediaFileStore;
+import io.github.pollinators.honeycomb.util.MediaFileStore;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
 import io.github.pollinators.honeycomb.util.MediaUtils;
 
@@ -24,6 +26,16 @@ public class MediaModule {
 
     @Provides @Singleton
     MediaFileStore provideMediaFileStore() {
-        return new MediaUtils();
+        return new MediaFileStore() {
+            @Override
+            public Uri getImageFileUri() {
+                return MediaUtils.getOutputMediaFileUri(MediaUtils.MEDIA_TYPE_IMAGE);
+            }
+
+            @Override
+            public Uri getVideoFileUri() {
+                return MediaUtils.getOutputMediaFileUri(MediaUtils.MEDIA_TYPE_VIDEO);
+            }
+        };
     }
 }

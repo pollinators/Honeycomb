@@ -14,7 +14,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+
+import android.net.Uri;
 
 import javax.inject.Inject;
 
@@ -61,6 +65,9 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
 
     private DrawerLayout mDrawerLayout;
     @InjectView(R.id.frag_nav_drawer) ListView mDrawerListView;
+    @InjectView(R.id.imageView)
+    ImageView pollinatorImageView;
+
     private View mFragmentContainerView;
 
     private int mCurrentSelectedPosition = 0;
@@ -275,6 +282,13 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
         return ((ActionBarActivity) getActivity()).getSupportActionBar();
     }
 
+    public void setImageView(Uri imageURI) {
+        pollinatorImageView.setImageURI(imageURI);
+    }
+
+    //**********************************************************************************************
+    // INTERFACES
+    //**********************************************************************************************
     /**
      * Callbacks interface that all activities using this pollinators.github.io.pollinatorresearchcollector.fragment must implement.
      */

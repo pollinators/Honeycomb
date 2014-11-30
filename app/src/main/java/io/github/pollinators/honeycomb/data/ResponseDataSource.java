@@ -5,24 +5,24 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 
 
-import io.github.pollinators.honeycomb.data.models.SurveyAnswer;
-import io.github.pollinators.honeycomb.data.models.SurveyResponseModel;
+import io.github.pollinators.honeycomb.data.models.Answer;
+import io.github.pollinators.honeycomb.data.models.ResponseData;
 
 /**
  * Created by ted on 10/18/14.
  */
-public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
+public class ResponseDataSource extends AbstractDataSource<ResponseData> {
 
     private int questionCount;
 
-    public SurveyDataSource(SQLiteOpenHelper dbHelper, int questionCount) {
+    public ResponseDataSource(SQLiteOpenHelper dbHelper, int questionCount) {
         super(dbHelper);
         this.questionCount = questionCount;
     }
 
     @Override
     public String getTableName() {
-        return SurveySQLiteHelper.TABLE_SURVEY_DATA;
+        return SurveySQLiteHelper.TABLE_RESPONSE_DATA;
     }
 
     //**********************************************************************************************
@@ -32,43 +32,34 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
     /**
      * Create
      */
-    public SurveyResponseModel create() {
+    public ResponseData create() {
 
-        ContentValues values = new ContentValues(1);
-        values.put(SurveySQLiteHelper.COLUMN_START_DATETIME, System.currentTimeMillis());
-        long surveyResponseId = database.insert(SurveySQLiteHelper.TABLE_SURVEY_DATA, null, values);
+        // Returns a model without answer IDs set since none exist yet
+        ResponseData model = super.create();
 
         // Create place holders for all the answers
         long[] answerIds = new long[questionCount];
         for (int i = 0; i < questionCount; i++) {
             ContentValues value = new ContentValues(1);
-            value.put(SurveySQLiteHelper.COLUMN_SURVEY_DATA_ID, surveyResponseId);
-            answerIds[i] = database.insert(SurveySQLiteHelper.TABLE_SURVEY_ANSWERS,
+            value.put(SurveySQLiteHelper.COLUMN_RESPONSE_DATA_ID, model.getId());
+            answerIds[i] = database.insert(SurveySQLiteHelper.TABLE_ANSWERS,
                     null, value);
         }
 
-        return get(surveyResponseId);
+        // Get the model again, this time with the answer IDs
+        return get(model.getId());
     }
 
     /**
      * Retreive
      */
-    public SurveyResponseModel get(long id) {
-        Cursor cursor = database.query(SurveySQLiteHelper.TABLE_SURVEY_DATA, null,
-                SurveySQLiteHelper.COLUMN_ID + " = " + id,
-                null, null, null, null);
-
-        SurveyResponseModel model = null;
-        if (cursor.moveToFirst()) {
-            model  = cursorToModel(cursor);
-            cursor.close();
-        }
+    public ResponseData get(long id) {
+        ResponseData model = super.get(id);
 
         if (model != null) {
-
-            cursor = database.query(SurveySQLiteHelper.TABLE_SURVEY_ANSWERS,
+            Cursor cursor = database.query(SurveySQLiteHelper.TABLE_ANSWERS,
                     new String[] {SurveySQLiteHelper.COLUMN_ID},
-                    SurveySQLiteHelper.COLUMN_SURVEY_DATA_ID + " = " + id,
+                    SurveySQLiteHelper.COLUMN_RESPONSE_DATA_ID + " = " + id,
                     null, null, null, null);
 
             long[] answerIds = new long[questionCount];
@@ -88,16 +79,24 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
         return model;
     }
 
+    @Override
+    public ContentValues getInitializerContentValues() {
+        ContentValues values = new ContentValues(1);
+        values.put(SurveySQLiteHelper.COLUMN_START_DATETIME, System.currentTimeMillis());
+
+        return values;
+    }
+
     /**
      * Delete
      * <p>
      * deletes response, with associated answers
      */
-    public void delete(SurveyResponseModel model) {
+    public void delete(ResponseData model) {
         super.delete(model);
 
         for (long answerId : model.getAnswerIds()) {
-            database.delete(SurveySQLiteHelper.TABLE_SURVEY_ANSWERS,
+            database.delete(SurveySQLiteHelper.TABLE_ANSWERS,
                     SurveySQLiteHelper.COLUMN_ID + " = " + answerId, null);
         }
     }
@@ -112,7 +111,7 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
      * @param model
      * @return
      */
-    public ContentValues modelToContentValues(SurveyResponseModel model) {
+    public ContentValues modelToContentValues(ResponseData model) {
         ContentValues values = new ContentValues();
 
         if (model.getDuration() <= 0) {
@@ -133,7 +132,7 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
             values.put(SurveySQLiteHelper.COLUMN_LATITUDE, model.getLatitude());
         }
 
-        if (model.getLatitude() == null) {
+        if (model.getLongitude() == null) {
             values.putNull(SurveySQLiteHelper.COLUMN_LONGITUDE);
         } else {
             values.put(SurveySQLiteHelper.COLUMN_LONGITUDE, model.getLongitude());
@@ -154,7 +153,7 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
      * @param model
      * @return
      */
-    public ContentValues answerToContentValues(SurveyAnswer model) {
+    public ContentValues answerToContentValues(Answer model) {
         ContentValues values = new ContentValues();
 
         if (model.getIntAnswer() == null) {
@@ -188,24 +187,44 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
     // Cursor-to-Model Methods
     //**********************************************************************************************
 
-    public SurveyResponseModel cursorToModel(Cursor cursor) {
-        SurveyResponseModel model = new SurveyResponseModel();
+    public ResponseData cursorToModel(Cursor cursor) {
+        ResponseData model = new ResponseData();
 
         model.setId(cursor.getInt(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_ID)));
         model.setStartTime(cursor.getLong(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_START_DATETIME)));
         model.setDuration(cursor.getInt(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_DURATION)));
-        model.setLatitude(cursor.getFloat(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_LATITUDE)));
-        model.setLongitude(cursor.getFloat(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_LONGITUDE)));
+
+        String latVal = cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_LATITUDE));
+        if (latVal == null) {
+            model.setLatitude(null);
+        } else {
+            model.setLatitude(Float.parseFloat(latVal));
+        }
+
+        String lngVal = cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_LONGITUDE));
+        if (lngVal == null) {
+            model.setLongitude(null);
+        } else {
+            model.setLongitude(Float.parseFloat(lngVal));
+        }
 
         return model;
     }
 
-    public SurveyAnswer cursorToAnswer(Cursor cursor) {
-        SurveyAnswer model = new SurveyAnswer();
+    public Answer cursorToAnswer(Cursor cursor) {
+        Answer model = new Answer();
 
         // TODO: Figure out null checking
         model.setId(cursor.getInt(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_ID)));
-        model.setIntAnswer(cursor.getInt(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_INTEGER)));
+
+        // First get the value as a String to check if it is Null, because we can have Null ints
+        String intValue = cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_INTEGER));
+        if (intValue == null) {
+            model.setIntAnswer(null);
+        } else {
+            model.setIntAnswer(Integer.parseInt(intValue));
+        }
+
         model.setTextAnswer(cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_TEXT)));
         model.setRealAnswer(cursor.getDouble(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_REAL)));
         model.setBlobAnswer(cursor.getBlob(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_BLOB)));
@@ -224,15 +243,15 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
      * @param questionNumber
      * @return
      */
-    public SurveyAnswer getAnswer(SurveyResponseModel surveyResponse, int questionNumber) {
+    public Answer getAnswer(ResponseData surveyResponse, int questionNumber) {
         long questionId = surveyResponse.getAnswerIds()[questionNumber];
 
-        Cursor cursor = database.query(SurveySQLiteHelper.TABLE_SURVEY_ANSWERS, null,
+        Cursor cursor = database.query(SurveySQLiteHelper.TABLE_ANSWERS, null,
                 SurveySQLiteHelper.COLUMN_ID + " = " + questionId +
-                        " AND " + SurveySQLiteHelper.COLUMN_SURVEY_DATA_ID + " = ?",
+                        " AND " + SurveySQLiteHelper.COLUMN_RESPONSE_DATA_ID + " = ?",
                 new String[]{ String.valueOf(surveyResponse.getId()) }, null, null, null);
 
-        SurveyAnswer model = null;
+        Answer model = null;
         if (cursor.moveToFirst()) {
             model = cursorToAnswer(cursor);
             cursor.close();
@@ -244,8 +263,8 @@ public class SurveyDataSource extends AbstractDataSource<SurveyResponseModel> {
     /**
      * Update
      */
-    public void saveAnswer(SurveyAnswer model) {
-        database.update(SurveySQLiteHelper.TABLE_SURVEY_ANSWERS, answerToContentValues(model),
+    public void saveAnswer(Answer model) {
+        database.update(SurveySQLiteHelper.TABLE_ANSWERS, answerToContentValues(model),
                 SurveySQLiteHelper.COLUMN_ID + " = " + model.getId(), null);
     }
 
