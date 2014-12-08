@@ -156,28 +156,28 @@ public class ResponseDataSource extends AbstractDataSource<ResponseData> {
     public ContentValues answerToContentValues(Answer model) {
         ContentValues values = new ContentValues();
 
-        if (model.getIntAnswer() == null) {
+        if (model.getIntValue() == null) {
             values.putNull(SurveySQLiteHelper.COLUMN_INTEGER);
         } else {
-            values.put(SurveySQLiteHelper.COLUMN_INTEGER, model.getIntAnswer());
+            values.put(SurveySQLiteHelper.COLUMN_INTEGER, model.getIntValue());
         }
 
-        if (model.getTextAnswer() == null) {
+        if (model.getTextValue() == null) {
             values.putNull(SurveySQLiteHelper.COLUMN_TEXT);
         } else {
-            values.put(SurveySQLiteHelper.COLUMN_TEXT, model.getTextAnswer());
+            values.put(SurveySQLiteHelper.COLUMN_TEXT, model.getTextValue());
         }
 
-        if (model.getRealAnswer() == null) {
+        if (model.getRealValue() == null) {
             values.putNull(SurveySQLiteHelper.COLUMN_REAL);
         } else {
-            values.put(SurveySQLiteHelper.COLUMN_REAL, model.getRealAnswer());
+            values.put(SurveySQLiteHelper.COLUMN_REAL, model.getRealValue());
         }
 
-        if (model.getBlobAnswer() == null) {
+        if (model.getBlobValue() == null) {
             values.putNull(SurveySQLiteHelper.COLUMN_BLOB);
         } else {
-            values.put(SurveySQLiteHelper.COLUMN_BLOB, model.getBlobAnswer());
+            values.put(SurveySQLiteHelper.COLUMN_BLOB, model.getBlobValue());
         }
 
         return values;
@@ -220,14 +220,14 @@ public class ResponseDataSource extends AbstractDataSource<ResponseData> {
         // First get the value as a String to check if it is Null, because we can have Null ints
         String intValue = cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_INTEGER));
         if (intValue == null) {
-            model.setIntAnswer(null);
+            model.setIntValue(null);
         } else {
-            model.setIntAnswer(Integer.parseInt(intValue));
+            model.setIntValue(Integer.parseInt(intValue));
         }
 
-        model.setTextAnswer(cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_TEXT)));
-        model.setRealAnswer(cursor.getDouble(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_REAL)));
-        model.setBlobAnswer(cursor.getBlob(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_BLOB)));
+        model.setTextValue(cursor.getString(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_TEXT)));
+        model.setRealValue(cursor.getDouble(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_REAL)));
+        model.setBlobValue(cursor.getBlob(cursor.getColumnIndex(SurveySQLiteHelper.COLUMN_BLOB)));
 
         return model;
     }

@@ -24,7 +24,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 21
         versionCode 1
-        versionName "1.0"
+        versionName "0.1.0"
     }
 
     signingConfigs {
@@ -47,16 +47,10 @@ android {
 
         debug {
             signingConfig signingConfigs.debug
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
-            debuggable true
         }
 
         release {
             signingConfig signingConfigs.release
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
-            debuggable false
         }
     }
 
@@ -73,27 +67,41 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     // Logging Library:
-    
+    compile 'com.jakewharton.timber:timber:2.4.+'
 
     // Event Bus Library:
-    
+    compile 'com.squareup:otto:1.3.5'
+
     // Dependency Injection Library:
-    
+    compile 'com.squareup.dagger:dagger:1.2.2'
+    compile 'com.squareup.dagger:dagger-compiler:1.2.2'
+
     // View "Injection" Library:
-    
+    compile 'com.jakewharton:butterknife:6.0.0'
+
+    // Image Downloading and Caching Library
+    compile 'com.squareup.picasso:picasso:2.4.0'
+
+    // HTTP Client Library
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
+    compile 'com.squareup.okhttp:okhttp:2.0.0'
+
+    // REST Interface Library
+    compile 'com.squareup.retrofit:retrofit:1.8.0'
+
+    // Filed-based FIFO
+    compile 'com.squareup:tape:1.2.3'
+
     // Fragment Argugment "Injection" Library:
+    compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.3'
     apt 'com.hannesdorfmann.fragmentargs:processor:1.0.3'
 
     // Support Libraries for older Android versions:
-    compile 'com.jakewharton.timber:timber:2.4.+'
-    compile 'com.squareup:otto:1.3.5'
-    compile 'com.squareup.dagger:dagger:1.2.2'
-    compile 'com.squareup.dagger:dagger-compiler:1.2.2'
-    compile 'com.jakewharton:butterknife:6.0.0'
-    compile 'com.hannesdorfmann.fragmentargs:annotation:1.0.3'
     compile 'com.android.support:appcompat-v7:21.0.0'
-    compile 'com.twotoasters.RecyclerViewLib:library:1.0.+@aar'
-    compile 'ro.tudorluca.numberpicker:numberpicker-library:1.0'
+    compile 'com.android.support:recyclerview-v7:21.0.+'
+    compile project(':android-numberpicker')
+
+    // Google Play Services for Location Based Tools
     compile 'com.google.android.gms:play-services:4.2.42'
 }
 

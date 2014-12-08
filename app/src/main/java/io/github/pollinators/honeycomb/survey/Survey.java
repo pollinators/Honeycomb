@@ -19,6 +19,7 @@ public abstract class Survey {
     public final static int TYPE_NUMBER_PICKER          = 0x0020;
     public final static int TYPE_COLOR_PICKER           = 0x0040;
     public final static int TYPE_WEATHER_PICKER         = 0x0080;
+    public final static int TYPE_TEMPERATURE_PICKER     = 0x0100;
 
     // Entry-type Flags
     public final static int BITS_FLAG                   = 0xF000;

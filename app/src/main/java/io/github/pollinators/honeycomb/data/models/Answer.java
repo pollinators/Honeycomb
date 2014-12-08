@@ -15,63 +15,63 @@ public class Answer extends AbstractModel {
     // NON-STATIC DATA MEMBERS
     //**********************************************************************************************
 
-    private String textAnswer;
-    private Integer intAnswer;
-    private Double realAnswer;
-    private byte[] blobAnswer;
+    private String textValue;
+    private Integer intValue;
+    private Double realValue;
+    private byte[] blobValue;
 
     public void clearData() {
-        textAnswer = null;
-        intAnswer = null;
-        realAnswer = null;
-        blobAnswer = null;
+        textValue = null;
+        intValue = null;
+        realValue = null;
+        blobValue = null;
     }
 
-    public Boolean getBoolAnswer() {
-        if (intAnswer == null) {
+    public Boolean getBoolValue() {
+        if (intValue == null) {
             return null;
         }
 
-        return (intAnswer != 0);
+        return (intValue != 0);
     }
 
-    public String getTextAnswer() {
-        return textAnswer;
+    public String getTextValue() {
+        return textValue;
     }
 
-    public Integer getIntAnswer() {
-        return intAnswer;
+    public Integer getIntValue() {
+        return intValue;
     }
 
-    public Double getRealAnswer() {
-        return realAnswer;
+    public Double getRealValue() {
+        return realValue;
     }
 
-    public byte[] getBlobAnswer() {
-        return blobAnswer;
+    public byte[] getBlobValue() {
+        return blobValue;
     }
 
     public void setBoolAnswer(Boolean boolAnswer) {
         if (boolAnswer == null) {
-            setIntAnswer(null);
+            setIntValue(null);
         } else {
-            setIntAnswer(boolAnswer ? 1 : 0);
+            setIntValue(boolAnswer ? 1 : 0);
         }
     }
 
-    public void setTextAnswer(String textAnswer) {
-        this.textAnswer = textAnswer;
+    public void setTextValue(String textValue) {
+        this.textValue = textValue;
     }
 
-    public void setIntAnswer(Integer intAnswer) {
-        this.intAnswer = intAnswer;
+    public void setIntValue(Integer intValue) {
+        this.intValue = intValue;
     }
 
-    public void setRealAnswer(Double realAnswer) {
-        this.realAnswer = realAnswer;
+    public void setRealValue(Double realValue) {
+        this.realValue = realValue;
     }
 
-    public void setBlobAnswer(byte[] blob) {
-        this.blobAnswer = blob;
+    public void setBlobValue(byte[] blob) {
+        this.blobValue = blob;
     }
 }

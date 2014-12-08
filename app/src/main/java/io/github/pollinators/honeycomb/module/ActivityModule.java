@@ -9,7 +9,13 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
 import com.squareup.otto.Bus;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Request;
+import com.squareup.picasso.RequestHandler;
 
+import java.io.IOException;
+
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -71,7 +77,47 @@ public class ActivityModule {
         return new LocationClient(activity, connCBs, cfl);
     }
 
-    @Provides SQLiteOpenHelper provideSQLiteOpenHelper() {
-        return new SurveySQLiteHelper(activity);
+    @Provides
+    Picasso providePicasso(@Named("Local") RequestHandler localHandler,
+                           @Named("Network") RequestHandler networkHandler) {
+        return new Picasso.Builder(activity)
+//                .addRequestHandler(networkHandler)
+//                .addRequestHandler(localHandler)
+                .indicatorsEnabled(true)
+                .build();
+    }
+
+    @Provides @Named("Local") RequestHandler provideLocalRequestHandler() {
+        return new RequestHandler() {
+            @Override
+            public boolean canHandleRequest(Request data) {
+                if (data.resourceId > 1) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Result load(Request data) throws IOException {
+                return null;
+            }
+        };
+    }
+
+    @Provides @Named("Network") RequestHandler provideNetworkRequestHandler() {
+        return new RequestHandler() {
+            @Override
+            public boolean canHandleRequest(Request data) {
+                if (data.resourceId > 1) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Result load(Request data) throws IOException {
+                return null;
+            }
+        };
     }
 }

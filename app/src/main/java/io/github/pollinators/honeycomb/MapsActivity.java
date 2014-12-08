@@ -23,8 +23,10 @@ import javax.inject.Inject;
 import dagger.Module;
 import dagger.Provides;
 import io.github.pollinators.honeycomb.data.ResponseDataSource;
+import io.github.pollinators.honeycomb.module.DatabaseModule;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.Survey;
+import timber.log.Timber;
 
 public class MapsActivity extends PollinatorsBaseActivity {
 
@@ -35,10 +37,11 @@ public class MapsActivity extends PollinatorsBaseActivity {
     @Inject LocationClient mLocationClient;
     @Inject Survey survey;
     @Inject SQLiteOpenHelper dbHelper;
+    @Inject ResponseDataSource responseDataSource;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
-    LocationListener listener = new LocationListener() {
+    private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             addMarkersInLine(location.getLatitude(), location.getLongitude());
@@ -54,6 +57,7 @@ public class MapsActivity extends PollinatorsBaseActivity {
     public MapsActivity() {
         super();
         getModules().add(new QuestionModule());
+        getModules().add(new DatabaseModule());
         getModules().add(new GooglePlayServicesClientModule());
     }
 
@@ -74,9 +78,8 @@ public class MapsActivity extends PollinatorsBaseActivity {
         setUpMapIfNeeded();
         mLocationClient.connect();
 
-        ResponseDataSource data = new ResponseDataSource(dbHelper, survey.getQuestionCount());
         try {
-            data.open();
+            responseDataSource.open();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -100,17 +103,25 @@ public class MapsActivity extends PollinatorsBaseActivity {
         // If the client is connected
         if (mLocationClient.isConnected()) {
             /*
-             * Remove location updates for a listener.
-             * The current Activity is the listener, so
+             * Remove location updates for a locationListener.
+             * The current Activity is the locationListener, so
              * the argument is "this".
              */
 //            removeLocationUpdates(this);
+            mLocationClient.removeLocationUpdates(locationListener);
         }
         /*
          * After disconnect() is called, the client is
          * considered "dead".
          */
         mLocationClient.disconnect();
+
+        try {
+            responseDataSource.close();
+        } catch (NullPointerException e) {
+            Timber.e(e, "The data source was null for some reason. It was probably not opened correctly");
+        }
+
         super.onStop();
     }
 
@@ -186,7 +197,7 @@ public class MapsActivity extends PollinatorsBaseActivity {
                     lr.setInterval(5000);
                     lr.setFastestInterval(1000);
 
-                    mLocationClient.requestLocationUpdates(lr, listener);
+                    mLocationClient.requestLocationUpdates(lr, locationListener);
                 }
 
                 @Override

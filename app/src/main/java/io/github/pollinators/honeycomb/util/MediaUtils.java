@@ -1,5 +1,7 @@
 package io.github.pollinators.honeycomb.util;
 
+import android.content.ContentResolver;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -58,6 +60,15 @@ public class MediaUtils {
         }
 
         return mediaFile;
+    }
+
+    public static Uri createUriFromResource(Resources resources, int resId) {
+        Uri uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                + resources.getResourcePackageName(resId) + '/'
+                + resources.getResourceTypeName(resId) + '/'
+                + resources.getResourceEntryName(resId));
+
+        return uri;
     }
 
 }

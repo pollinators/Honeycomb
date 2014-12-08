@@ -51,7 +51,6 @@ public class YesNoView extends RadioGroup implements DataView<Boolean> {
     public YesNoView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-//        ButterKnife.inject(this, View.inflate(getContext(), R.layout.view_yes_no, null));
         yesButton = new RadioButton(context);
         noButton = new RadioButton(context);
 

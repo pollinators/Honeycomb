@@ -12,4 +12,8 @@ public class Events {
     public static class SaveQuestionDataEvent {
 
     }
+
+    public static class CameraRequestedEvent {
+
+    }
 }

@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.github.pollinators.honeycomb.data.models.Image;
 
 /**
@@ -116,5 +119,17 @@ public class ImageDataSource extends AbstractDataSource<Image> {
         }
 
         return values;
+    }
+
+    public List<Image> getAll() {
+        Cursor cursor = database.query(getTableName(), null, null, null, null, null, null);
+        List<Image> imageList = new ArrayList<Image>(cursor.getCount());
+        if (cursor.moveToFirst()) {
+            do {
+                imageList.add(cursorToModel(cursor));
+            } while (cursor.moveToNext());
+        }
+
+        return imageList;
     }
 }

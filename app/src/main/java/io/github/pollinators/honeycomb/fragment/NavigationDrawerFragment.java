@@ -9,12 +9,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import butterknife.InjectView;
 import io.github.pollinators.honeycomb.R;
 import io.github.pollinators.honeycomb.adapter.QuestionListAdapter;
+import io.github.pollinators.honeycomb.data.ImageDataSource;
 import io.github.pollinators.honeycomb.survey.Survey;
 
 /**
@@ -65,6 +66,7 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
 
     private DrawerLayout mDrawerLayout;
     @InjectView(R.id.frag_nav_drawer) ListView mDrawerListView;
+
     @InjectView(R.id.imageView)
     ImageView pollinatorImageView;
 
@@ -77,8 +79,8 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
     @Inject SharedPreferences sharedPreferences;
     @Inject Survey survey;
 
-    public NavigationDrawerFragment() {
-    }
+    @Inject
+    ImageDataSource imageDataSource;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,7 +120,9 @@ public class NavigationDrawerFragment extends PollinatorsBaseFragment {
         mDrawerListView.setAdapter(new QuestionListAdapter(
                 getActionBar().getThemedContext(), survey.getQuestionStrings()));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+
     }
+
 
     public boolean isDrawerOpen() {
         return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);

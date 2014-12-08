@@ -58,7 +58,7 @@ public class MedoraSurvey extends Survey {
                 R.array.question_options_is_the_wind);
 
         addQuestion(QUESTION_TEMP,
-                TYPE_NUMBER_PICKER | FLAG_OTHER,
+                TYPE_TEMPERATURE_PICKER,
                 null);
 
         addQuestion(QUESTION_FLOWER_COLOR,

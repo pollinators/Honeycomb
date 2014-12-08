@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -29,7 +31,6 @@ import dagger.Provides;
 import io.github.pollinators.honeycomb.data.DataMappingSource;
 import io.github.pollinators.honeycomb.data.ImageDataSource;
 import io.github.pollinators.honeycomb.data.ResponseDataSource;
-import io.github.pollinators.honeycomb.data.SurveySQLiteHelper;
 import io.github.pollinators.honeycomb.data.models.Answer;
 import io.github.pollinators.honeycomb.data.models.Image;
 import io.github.pollinators.honeycomb.data.models.MappingModel;
@@ -37,6 +38,7 @@ import io.github.pollinators.honeycomb.data.models.ResponseData;
 import io.github.pollinators.honeycomb.fragment.NavigationDrawerFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragmentBuilder;
+import io.github.pollinators.honeycomb.module.DatabaseModule;
 import io.github.pollinators.honeycomb.module.MediaModule;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.MedoraSurvey;
@@ -49,17 +51,31 @@ import timber.log.Timber;
 public class MainActivity extends PollinatorsBaseActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks
 {
+    //**********************************************************************************************
+    // STATIC DATA MEMBERS
+    //**********************************************************************************************
+
+    private static final String KEY_IMAGE_URI = "IMAGE_URI";
+    private static final String KEY_CURRENT_RESPONSE_ID = "CURRENT_RESPONSE_ID";
+
+    //**********************************************************************************************
+    // NON-STATIC DATA MEMBERS
+    //**********************************************************************************************
+
     @Inject Survey survey;
     @Inject SharedPreferences sharedPrefs;
     @Inject LocationClient mLocationClient;
     @Inject SQLiteOpenHelper dbHelper;
     @Inject MediaFileStore mediaFileStore;
 
-    Uri imageUri;
+    @Inject ResponseDataSource responseDataSource;
+    @Inject ImageDataSource imageDataSource;
 
-    QuestionFragment questionFragment;
+    private Uri imageUri;
 
-    int currentPosition;
+    private QuestionFragment questionFragment;
+
+    private int currentPosition;
 
     private Location lastLocation;
 
@@ -73,14 +89,15 @@ public class MainActivity extends PollinatorsBaseActivity
      */
     private CharSequence mTitle;
 
-    private ResponseData surveyResponse;
+    private ResponseData responseData;
     private MappingModel<ResponseData, Image> responseDataImage;
 
-    ResponseDataSource responseDataSource;
-    ImageDataSource imageDataSource;
-    DataMappingSource<ResponseData, Image> responseDataImageDataMappingSource;
 
-    LocationListener locationListener = new LocationListener() {
+    private DataMappingSource<ResponseData, Image> responseDataImageDataMappingSource;
+
+    private long currentSurveyResponseId;
+
+    private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             toaster.toast("Location has changed");
@@ -89,12 +106,21 @@ public class MainActivity extends PollinatorsBaseActivity
         }
     };
 
+    //**********************************************************************************************
+    // CONSTRUCTORS
+    //**********************************************************************************************
+
     public MainActivity() {
         super();
         getModules().add(new QuestionModule());
         getModules().add(new MediaModule());
         getModules().add(new GooglePlayServicesClientModule());
+        getModules().add(new DatabaseModule());
     }
+
+    //**********************************************************************************************
+    // OVERRIDDEN METHODS
+    //**********************************************************************************************
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,12 +130,29 @@ public class MainActivity extends PollinatorsBaseActivity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+
+        openDataSources();
+
+        if (savedInstanceState != null) {
+            imageUri = savedInstanceState.getParcelable(KEY_IMAGE_URI);
+            currentSurveyResponseId = savedInstanceState.getLong(KEY_CURRENT_RESPONSE_ID, -1);
+        }
+
+        if (currentSurveyResponseId > 0) {
+            responseData = responseDataSource.get(currentSurveyResponseId);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_IMAGE_URI, imageUri);
+        outState.putLong(KEY_CURRENT_RESPONSE_ID, currentSurveyResponseId);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
         openDataSources();
 
         // Set up the drawer.
@@ -119,34 +162,16 @@ public class MainActivity extends PollinatorsBaseActivity
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         questionFragment = new QuestionFragmentBuilder(0).build();
+
         fragmentManager.beginTransaction()
                 .replace(R.id.container, questionFragment)
                 .commit();
     }
 
-    private void openDataSources() {
-        responseDataSource = new ResponseDataSource(dbHelper, survey.getQuestionCount());
-        imageDataSource = new ImageDataSource(dbHelper);
-
-        responseDataImageDataMappingSource = new DataMappingSource<ResponseData, Image>(dbHelper,
-                responseDataSource, imageDataSource);
-
-        try {
-            responseDataSource.open();
-            imageDataSource.open();
-            responseDataImageDataMappingSource.open();
-        } catch (SQLException e) {
-            Timber.e(e, "Unexpected error when opening database");
-            responseDataSource = null;
-            imageDataSource = null;
-            responseDataImageDataMappingSource = null;
-        }
-    }
-
     @Override
     protected void onStop() {
 
-        sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, surveyResponse.getId()).commit();
+        sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, responseData.getId()).commit();
 
         try {
             responseDataSource.close();
@@ -164,18 +189,18 @@ public class MainActivity extends PollinatorsBaseActivity
         super.onResume();
 
         // Get the current survey response from the database if it exists
-        long currentSurveyResponseId = sharedPrefs.getLong(KEY_SURVEY_RESPONSE_ID, -1);
+        currentSurveyResponseId = sharedPrefs.getLong(KEY_SURVEY_RESPONSE_ID, -1);
 
         if (currentSurveyResponseId < 1) {
-            // If surveyId is invalid, create a new surveyResponse
-            surveyResponse = responseDataSource.create();
-            sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, surveyResponse.getId()).commit();
+            // If surveyId is invalid, create a new responseData
+            responseData = responseDataSource.create();
+            sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, responseData.getId()).commit();
         } else {
-            surveyResponse = responseDataSource.get(currentSurveyResponseId);
+            responseData = responseDataSource.get(currentSurveyResponseId);
         }
 
         // TODO: Take this out of production code
-        if (surveyResponse == null) {
+        if (responseData == null) {
             Timber.w("The survey response was null. Not good");
             throw new NullPointerException("The survey response was null. Not good");
         }
@@ -194,7 +219,9 @@ public class MainActivity extends PollinatorsBaseActivity
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 // Image captured and saved to fileUri specified in the Intent
-                toaster.toast("Image saved to:\n" + imageUri.toString());
+                if (toaster != null) {
+                    toaster.toast("Image saved to:\n" + imageUri.toString());
+                }
 
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(imageUri);
@@ -216,10 +243,10 @@ public class MainActivity extends PollinatorsBaseActivity
                 image.setPhotographerUserId(12345l);
                 image.setTitle("This is a picture of my dog");
 
-                mNavigationDrawerFragment.setImageView(imageUri);
+//                mNavigationDrawerFragment.setImageView(imageUri);
                 mNavigationDrawerFragment.show();
 
-                responseDataImage = responseDataImageDataMappingSource.create(surveyResponse, image);
+                responseDataImage = responseDataImageDataMappingSource.create(responseData, image);
 
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the image capture
@@ -231,114 +258,8 @@ public class MainActivity extends PollinatorsBaseActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-
-        if (questionFragment != null) {
-            saveQuestionData(null);
-
-            if (position < 0 || (position >= survey.getQuestionCount())) {
-                currentPosition = 0;
-                mNavigationDrawerFragment.show();
-            } else {
-                currentPosition = position;
-            }
-
-            questionFragment.setQuestion(currentPosition);
-            retreiveQuestionData(null);
-        }
+        selectQuestion(position);
     }
-
-
-    @Subscribe
-    public void saveQuestionData(Events.SaveQuestionDataEvent event) {
-        Object data = questionFragment.getCurrentData();
-
-        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
-
-        Answer answer = responseDataSource.getAnswer(surveyResponse, currentPosition);
-
-        if (data == null) {
-            answer.clearData();
-        }
-
-        try {
-            switch (sq.getType()) {
-                case MedoraSurvey.TYPE_YN:
-                    answer.setBoolAnswer((Boolean) data);
-                    break;
-                case MedoraSurvey.TYPE_NUMERIC:
-                    answer.setRealAnswer((Double) data);
-                    break;
-                case MedoraSurvey.TYPE_RADIO_MULTI_CHOICE:
-                    answer.setTextAnswer(String.valueOf(data));
-                    break;
-                case MedoraSurvey.TYPE_NUMBER_PICKER:
-                    answer.setIntAnswer((Integer) data);
-                    break;
-            }
-
-            responseDataSource.saveAnswer(answer);
-
-        } catch(ClassCastException e) {
-            Timber.e(e, "Something happened");
-        }
-
-    }
-
-    @Subscribe
-    public void retreiveQuestionData(Events.RetreiveQuestionDataEvent event) {
-        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
-        Answer answer = responseDataSource.getAnswer(surveyResponse, currentPosition);
-        // TODO: Null check answer in production
-
-        try {
-            Object data;
-
-            switch (sq.getType()) {
-               case MedoraSurvey.TYPE_YN:
-                    data = answer.getBoolAnswer();
-                    break;
-                case MedoraSurvey.TYPE_NUMERIC:
-                    data = answer.getRealAnswer();
-                    break;
-                case MedoraSurvey.TYPE_RADIO_MULTI_CHOICE:
-                    data = answer.getTextAnswer();
-                    break;
-                case MedoraSurvey.TYPE_NUMBER_PICKER:
-                    data = answer.getIntAnswer();
-                    break;
-                default:
-                    data = null;
-            }
-
-            questionFragment.setCurrentData(data);
-
-        } catch (ClassCastException e) {
-            Timber.e(e, "Something happened");
-        }
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
-    }
-
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(false);
-//        actionBar.setTitle(mTitle);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -375,38 +296,178 @@ public class MainActivity extends PollinatorsBaseActivity
         } else if (id == R.id.action_submit) {
             submitSurvey();
         } else if (id == R.id.action_camera) {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            imageUri = mediaFileStore.getImageFileUri();
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+            requestCamera(null);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void onNextSelected() {
-        onNavigationDrawerItemSelected(currentPosition + 1);
+    //**********************************************************************************************
+    // NON-STATIC METHODS
+    //**********************************************************************************************
+
+    private void openDataSources() {
+
+        responseDataImageDataMappingSource = new DataMappingSource<ResponseData, Image>(dbHelper,
+                responseDataSource, imageDataSource);
+
+        try {
+            responseDataSource.open();
+            imageDataSource.open();
+            responseDataImageDataMappingSource.open();
+        } catch (SQLException e) {
+            Timber.e(e, "Unexpected error when opening database");
+            responseDataSource = null;
+            imageDataSource = null;
+            responseDataImageDataMappingSource = null;
+        }
     }
 
-    private void onPreviousSelected() {
-        onNavigationDrawerItemSelected(currentPosition - 1);
+    /**
+     * update the main content by replacing fragments
+     * @param questionPosition
+     */
+    private void selectQuestion(int questionPosition) {
+
+        if (questionFragment != null) {
+            saveQuestionData(null);
+
+            if ((questionPosition < 0) || (questionPosition >= survey.getQuestionCount())) {
+                currentPosition = 0;
+                mNavigationDrawerFragment.show();
+            } else {
+                currentPosition = questionPosition;
+            }
+
+            questionFragment.setQuestion(currentPosition);
+            retreiveQuestionData(null);
+        }
+    }
+
+    public void onSectionAttached(int number) {
+        switch (number) {
+            case 1:
+                mTitle = getString(R.string.title_section1);
+                break;
+            case 2:
+                mTitle = getString(R.string.title_section2);
+                break;
+            case 3:
+                mTitle = getString(R.string.title_section3);
+                break;
+        }
+    }
+
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(false);
+//        actionBar.setTitle(mTitle);
+    }
+
+
+    @Subscribe
+    public void saveQuestionData(@Nullable Events.SaveQuestionDataEvent event) {
+        Object data = questionFragment.getCurrentData();
+
+        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
+
+        Answer answer = responseDataSource.getAnswer(responseData, currentPosition);
+
+        if (data == null) {
+            answer.clearData();
+        }
+
+        try {
+            switch (sq.getType()) {
+                case Survey.TYPE_YN:
+                    answer.setBoolAnswer((Boolean) data);
+                    break;
+                case Survey.TYPE_NUMERIC:
+                case Survey.TYPE_TEMPERATURE_PICKER:
+                    answer.setRealValue((Double) data);
+                    break;
+                case Survey.TYPE_RADIO_MULTI_CHOICE:
+                case Survey.TYPE_TEXT:
+                    answer.setTextValue(String.valueOf(data));
+                    break;
+                case Survey.TYPE_NUMBER_PICKER:
+                    answer.setIntValue((Integer) data);
+                    break;
+            }
+
+            responseDataSource.saveAnswer(answer);
+
+        } catch(ClassCastException e) {
+            Timber.e(e, "Something happened");
+        }
+
+    }
+
+    @Subscribe
+    public void retreiveQuestionData(@Nullable Events.RetreiveQuestionDataEvent event) {
+        Survey.SurveyQuestion<String> sq = survey.getQuestion(currentPosition);
+        Answer answer = responseDataSource.getAnswer(responseData, currentPosition);
+        // TODO: Null check answer in production
+
+        try {
+            Object data;
+
+            switch (sq.getType()) {
+               case Survey.TYPE_YN:
+                    data = answer.getBoolValue();
+                    break;
+                case Survey.TYPE_NUMERIC:
+                case Survey.TYPE_TEMPERATURE_PICKER:
+                    data = answer.getRealValue();
+                    break;
+                case Survey.TYPE_RADIO_MULTI_CHOICE:
+                case Survey.TYPE_TEXT:
+                    data = answer.getTextValue();
+                    break;
+                case Survey.TYPE_NUMBER_PICKER:
+                    data = answer.getIntValue();
+                    break;
+                default:
+                    data = null;
+            }
+
+            questionFragment.setCurrentData(data);
+
+        } catch (ClassCastException e) {
+            Timber.e(e, "Something happened");
+        }
     }
 
     private void submitSurvey() {
-        surveyResponse.setSurveyEnded(true);
+        saveQuestionData(null);
+
+        responseData.setSurveyEnded(true);
 
         if (lastLocation != null) {
             //TODO: Change casting
-            surveyResponse.setLatitude((float) lastLocation.getLatitude());
-            surveyResponse.setLongitude((float) lastLocation.getLongitude());
+            responseData.setLatitude((float) lastLocation.getLatitude());
+            responseData.setLongitude((float) lastLocation.getLongitude());
         }
 
-        responseDataSource.save(surveyResponse);
+        responseDataSource.save(responseData);
         toaster.toast("Submission successful");
 
         // Create a new survey to take it's place
-        surveyResponse = responseDataSource.create();
+        responseData = responseDataSource.create();
+
+        currentSurveyResponseId = responseData.getId();
+
+        // Reset the current fragment shown
         questionFragment.setCurrentData(null);
+    }
+
+    @Subscribe
+    public void requestCamera(Events.CameraRequestedEvent event) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        imageUri = mediaFileStore.getImageFileUri();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
     //**********************************************************************************************
