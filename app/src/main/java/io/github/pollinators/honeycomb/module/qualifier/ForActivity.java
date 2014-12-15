@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.pollinators.honeycomb.module;
+
+package io.github.pollinators.honeycomb.module.qualifier;
 
 import java.lang.annotation.Retention;
 import javax.inject.Qualifier;
@@ -21,5 +22,5 @@ import javax.inject.Qualifier;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Qualifier @Retention(RUNTIME)
-public @interface ForApplication {
+public @interface ForActivity {
 }

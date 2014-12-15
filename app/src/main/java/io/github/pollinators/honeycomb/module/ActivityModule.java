@@ -2,11 +2,8 @@ package io.github.pollinators.honeycomb.module;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Bundle;
 
 import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
@@ -20,11 +17,12 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.github.pollinators.honeycomb.BuildConfig;
 import io.github.pollinators.honeycomb.MapsActivity;
-import io.github.pollinators.honeycomb.data.SurveySQLiteHelper;
 import io.github.pollinators.honeycomb.fragment.NavigationDrawerFragment;
 import io.github.pollinators.honeycomb.MainActivity;
 import io.github.pollinators.honeycomb.PollinatorsBaseActivity;
+import io.github.pollinators.honeycomb.module.qualifier.ForActivity;
 import io.github.pollinators.honeycomb.ui.ActionBarController;
 import io.github.pollinators.honeycomb.util.Utils;
 
@@ -68,13 +66,6 @@ public class ActivityModule {
 
     @Provides Utils.Toaster provideToaster() {
         return new Utils.Toaster(activity);
-    }
-
-    @Provides LocationClient provideLocationClient(
-            GooglePlayServicesClient.ConnectionCallbacks connCBs,
-            GooglePlayServicesClient.OnConnectionFailedListener cfl)
-    {
-        return new LocationClient(activity, connCBs, cfl);
     }
 
     @Provides

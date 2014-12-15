@@ -1,9 +1,7 @@
 package io.github.pollinators.honeycomb.module;
 
-import android.app.Activity;
 import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
 
 import javax.inject.Singleton;
 
@@ -14,9 +12,8 @@ import io.github.pollinators.honeycomb.data.ImageDataSource;
 import io.github.pollinators.honeycomb.data.ResponseDataSource;
 import io.github.pollinators.honeycomb.data.SurveySQLiteHelper;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
+import io.github.pollinators.honeycomb.module.qualifier.ForActivity;
 import io.github.pollinators.honeycomb.survey.Survey;
-import io.github.pollinators.honeycomb.util.MediaFileStore;
-import io.github.pollinators.honeycomb.util.MediaUtils;
 
 /**
  * Created by ted on 11/2/14.

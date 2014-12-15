@@ -5,15 +5,18 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import net.simonvt.numberpicker.NumberPicker;
 
 import io.github.pollinators.honeycomb.R;
 import io.github.pollinators.honeycomb.data.api.DataView;
+import io.github.pollinators.honeycomb.util.TemperatureConverter;
 import timber.log.Timber;
 
 /**
@@ -21,10 +24,22 @@ import timber.log.Timber;
  */
 public class TemperatureView extends LinearLayout implements DataView<Double> {
 
+    //**********************************************************************************************
+    // STATIC DATA MEMBERS
+    //**********************************************************************************************
+
     private static final int PRECISION = 2;
+
+    //**********************************************************************************************
+    // NON-STATIC DATA MEMBERS
+    //**********************************************************************************************
 
     private NumberPicker integerNumberPicker;
     private NumberPicker decimalNumberPicker;
+
+    //**********************************************************************************************
+    // CONSTRUCTORS
+    //**********************************************************************************************
 
     public TemperatureView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -50,9 +65,18 @@ public class TemperatureView extends LinearLayout implements DataView<Double> {
         decimalPoint.setText(".");
         decimalPoint.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 
+        // Temperature units selector
+        Spinner unitsSpinner = new Spinner(getContext());
+        ArrayAdapter<CharSequence> unitsAdapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.units_temperature_degrees, android.R.layout.simple_spinner_item);
+        unitsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        unitsSpinner.setAdapter(unitsAdapter);
+        unitsSpinner.setOnItemSelectedListener(new OnUnitSelectedListener());
+
         addView(integerNumberPicker);
         addView(decimalPoint);
         addView(decimalNumberPicker);
+        addView(unitsSpinner);
 
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) decimalPoint.getLayoutParams();
         params.gravity = Gravity.CENTER_VERTICAL;
@@ -62,7 +86,6 @@ public class TemperatureView extends LinearLayout implements DataView<Double> {
     @Override
     public void setData(Double data) {
         if (data == null) {
-            data = null;
             return;
         }
 
@@ -92,4 +115,41 @@ public class TemperatureView extends LinearLayout implements DataView<Double> {
     public void setNullable(boolean isNullable) {
 
     }
-}
+
+    // TODO: Use compatability library
+	private class OnUnitSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        private int currentUnit;
+//
+//        @Override
+//        public void onItemSelected(AdapterViewCompat<?> adapterViewCompat, View v, int selectedUnit, long l) {
+//            DataView<Double> dataView = TemperatureView.this;
+//
+//            if (dataView.getData() != null) {
+//                dataView.setData(TemperatureConverter.convert(currentUnit, selectedUnit, dataView.getData()));
+//            }
+//
+//            currentUnit = selectedUnit;
+//        }
+//
+//        @Override
+//        public void onNothingSelected(AdapterViewCompat<?> adapterViewCompat) {
+//
+//        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int selectedUnit, long id) {
+            DataView<Double> dataView = TemperatureView.this;
+
+            if (dataView.getData() != null) {
+                dataView.setData(TemperatureConverter.convert(currentUnit, selectedUnit, dataView.getData()));
+            }
+
+            currentUnit = selectedUnit;
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    }}

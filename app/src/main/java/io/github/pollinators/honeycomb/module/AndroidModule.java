@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.github.pollinators.honeycomb.PollinatorsApplication;
+import io.github.pollinators.honeycomb.module.qualifier.ForApplication;
 
 /**
  * Created by ted on 11/1/14.
@@ -22,7 +23,8 @@ public class AndroidModule {
         this.application = application;
     }
 
-    @Provides @Singleton @ForApplication Context provideApplicationContext() {
+    @Provides @Singleton @ForApplication
+    Context provideApplicationContext() {
         return application;
     }
 

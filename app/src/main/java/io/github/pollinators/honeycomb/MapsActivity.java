@@ -24,6 +24,7 @@ import dagger.Module;
 import dagger.Provides;
 import io.github.pollinators.honeycomb.data.ResponseDataSource;
 import io.github.pollinators.honeycomb.module.DatabaseModule;
+import io.github.pollinators.honeycomb.module.LocationModule;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.Survey;
 import timber.log.Timber;
@@ -59,6 +60,8 @@ public class MapsActivity extends PollinatorsBaseActivity {
         getModules().add(new QuestionModule());
         getModules().add(new DatabaseModule());
         getModules().add(new GooglePlayServicesClientModule());
+        getModules().add(new LocationModule());
+
     }
 
     //**********************************************************************************************

@@ -66,6 +66,8 @@ public class QuestionFragment extends PollinatorsBaseFragment {
 
     DataView dataView;
 
+    long responseId;
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -172,20 +174,23 @@ public class QuestionFragment extends PollinatorsBaseFragment {
         progressTextView.setText((questionId + 1) + "/" + survey.getQuestionCount());
     }
 
+    public void setResponseId(long id) {
+        this.responseId = id;
+    }
 
     /**
-     * Initializes and setups up the gallery view (a RecyclerView) which is defined in used in
+     * Initializes and sets up the gallery view (a RecyclerView) which is defined in used in
      * this fragment.
      *
      * @param imageDataSource database access to images
      */
     public void setupCameraRoll(ImageDataSource imageDataSource) {
-        Image cam = new Image();
-        cam.setUri(MediaUtils.createUriFromResource(getResources(), android.R.drawable.ic_menu_camera));
+        Image cameraImage = new Image();
+        cameraImage.setUri(MediaUtils.createUriFromResource(getResources(), android.R.drawable.ic_menu_camera));
 
         // Create the layout manager for the Recycler View
         List<Image> images = new ArrayList<Image>();
-        images.add(cam);
+        images.add(cameraImage);
         images.addAll(imageDataSource.getAll());
 
         layoutManager = new GridLayoutManager(getActivity(), 1);

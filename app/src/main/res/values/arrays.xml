@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources tools:ignore="MissingTranslation" xmlns:tools="http://schemas.android.com/tools">
     <string-array name="questions_bees">
         <item>What kind of pollinator is it?</item>
         <item>Do you have another name for the pollinator?</item>
@@ -71,4 +71,11 @@
         <item>As big as 3 inches</item>
         <item>Bigger than 3 inches</item>
     </string-array>
+
+    <string-array name="units_temperature_degrees">
+        <item>&#176;F</item>
+        <item>&#176;C</item>
+        <item>K</item>
+    </string-array>
+
 </resources>

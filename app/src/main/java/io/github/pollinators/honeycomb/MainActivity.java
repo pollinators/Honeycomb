@@ -23,6 +23,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.squareup.otto.Subscribe;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -38,13 +39,20 @@ import io.github.pollinators.honeycomb.data.models.ResponseData;
 import io.github.pollinators.honeycomb.fragment.NavigationDrawerFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragment;
 import io.github.pollinators.honeycomb.fragment.QuestionFragmentBuilder;
+import io.github.pollinators.honeycomb.module.APIsModule;
+import io.github.pollinators.honeycomb.module.AndroidModule;
 import io.github.pollinators.honeycomb.module.DatabaseModule;
+import io.github.pollinators.honeycomb.module.LocationModule;
 import io.github.pollinators.honeycomb.module.MediaModule;
 import io.github.pollinators.honeycomb.module.QuestionModule;
 import io.github.pollinators.honeycomb.survey.MedoraSurvey;
 import io.github.pollinators.honeycomb.survey.Survey;
 import io.github.pollinators.honeycomb.util.Events;
 import io.github.pollinators.honeycomb.util.MediaFileStore;
+import io.github.pollinators.honeycomb.util.PollinatorCoridorsAPI;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import timber.log.Timber;
 
 
@@ -70,6 +78,8 @@ public class MainActivity extends PollinatorsBaseActivity
 
     @Inject ResponseDataSource responseDataSource;
     @Inject ImageDataSource imageDataSource;
+
+    @Inject PollinatorCoridorsAPI api;
 
     private Uri imageUri;
 
@@ -102,9 +112,9 @@ public class MainActivity extends PollinatorsBaseActivity
         public void onLocationChanged(Location location) {
             toaster.toast("Location has changed");
             lastLocation = location;
-
         }
     };
+
 
     //**********************************************************************************************
     // CONSTRUCTORS
@@ -116,6 +126,8 @@ public class MainActivity extends PollinatorsBaseActivity
         getModules().add(new MediaModule());
         getModules().add(new GooglePlayServicesClientModule());
         getModules().add(new DatabaseModule());
+        getModules().add(new APIsModule());
+        getModules().add(new LocationModule());
     }
 
     //**********************************************************************************************
@@ -193,11 +205,15 @@ public class MainActivity extends PollinatorsBaseActivity
 
         if (currentSurveyResponseId < 1) {
             // If surveyId is invalid, create a new responseData
+
             responseData = responseDataSource.create();
-            sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, responseData.getId()).commit();
+            currentSurveyResponseId = responseData.getId();
+            sharedPrefs.edit().putLong(KEY_SURVEY_RESPONSE_ID, currentSurveyResponseId).commit();
         } else {
             responseData = responseDataSource.get(currentSurveyResponseId);
         }
+
+        questionFragment.setResponseId(currentSurveyResponseId);
 
         // TODO: Take this out of production code
         if (responseData == null) {
@@ -460,6 +476,43 @@ public class MainActivity extends PollinatorsBaseActivity
 
         // Reset the current fragment shown
         questionFragment.setCurrentData(null);
+        questionFragment.setResponseId(currentSurveyResponseId);
+
+        Double lat = (lastLocation != null) ? lastLocation.getLatitude() :  78d;
+        Double lng = (lastLocation != null) ? lastLocation.getLongitude() : 42d;
+
+        api.insertResponse(
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                rand(1, 4),
+                lat,
+                lng,
+                new Callback<PollinatorCoridorsAPI.Response>() {
+                    @Override
+                    public void success(PollinatorCoridorsAPI.Response response, Response response2) {
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Timber.e(error.getMessage());
+                        Timber.e(error.getUrl());
+
+                    }
+                });
+    }
+
+    int rand(int min, int max) {
+        return min + (int)(Math.random() * ((max - min) + 1));
     }
 
     @Subscribe
@@ -484,8 +537,8 @@ public class MainActivity extends PollinatorsBaseActivity
                 public void onConnected(Bundle bundle) {
                     LocationRequest lr = LocationRequest.create();
                     lr.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                    lr.setInterval(5000);
-                    lr.setFastestInterval(1000);
+                    lr.setInterval(10000);
+                    lr.setFastestInterval(5000);
 
                     mLocationClient.requestLocationUpdates(lr, locationListener);
                 }

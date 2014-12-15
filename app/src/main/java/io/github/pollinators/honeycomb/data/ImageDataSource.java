@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.pollinators.honeycomb.data.models.Image;
+import io.github.pollinators.honeycomb.data.models.ResponseData;
 
 /**
  * Created by ted on 11/28/14.
@@ -127,6 +128,22 @@ public class ImageDataSource extends AbstractDataSource<Image> {
         if (cursor.moveToFirst()) {
             do {
                 imageList.add(cursorToModel(cursor));
+            } while (cursor.moveToNext());
+        }
+
+        return imageList;
+    }
+
+    public List<Image> getAllFromReponse(long responseDataId) {
+        String selection =  SurveySQLiteHelper.COLUMN_RESPONSE_DATA_ID + " = " + responseDataId;
+        String[] columns = new String[] { SurveySQLiteHelper.COLUMN_IMAGE_ID };
+
+        Cursor cursor = database.query(SurveySQLiteHelper.TABLE_RESPONSE_DATA_IMAGES, columns, selection, null, null, null, null);
+
+        List<Image> imageList = new ArrayList<>(cursor.getCount());
+        if (cursor.moveToFirst()) {
+            do {
+                imageList.add(get(cursor.getLong(cursor.getColumnIndex(columns[0]))));
             } while (cursor.moveToNext());
         }
 
